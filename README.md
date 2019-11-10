@@ -13,3 +13,4 @@ In build.sbt, ensure `lazy val os =` is set to your operating system.
 - https://ahbejarano.gitbook.io/lwjglgamedev/ and associated source code https://github.com/lwjglgamedev/lwjglbook
 - https://github.com/JOML-CI/JOML
 - http://www.custommapmakers.org/skyboxes.php
+- https://opengameart.org

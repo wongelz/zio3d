@@ -12,6 +12,8 @@ object GameResources {
     final val monster = unsafePath("/models/monster/monster.md5mesh")
 
     final val particle = unsafePath("/models/particle/particle.obj")
+
+    final val tree = unsafePath("/models/tree/palm_tree.FBX")
   }
 
   object textures {

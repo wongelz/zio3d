@@ -139,7 +139,7 @@ object Game extends GLApp[RenderContext, GameState] {
           i <- loadStaticMesh(o.model)
           m <- shaders.scene.loadMesh(c.sceneShaderProgram, i.head)
         } yield o.instances.map { i =>
-          GameItem(m).withScale(o.scale).withPosition(i.position.x, 0, i.position.y)
+          GameItem(m).withScale(o.scale).withRotation(o.rotation).withPosition(i.position.x, 0, i.position.y)
         }
       }
       .map(_.flatten)

@@ -2,7 +2,7 @@ package zio3d.game.config
 
 import java.nio.file.Path
 
-import zio3d.core.math.{toRadians, Vector2, Vector3}
+import zio3d.core.math.{toRadians, AxisAngle4, Quaternion, Vector2, Vector3}
 import zio3d.engine.{Fog, SkyboxDefinition}
 import zio3d.game.GameResources.{models, textures}
 import zio3d.game.Perspective
@@ -72,7 +72,8 @@ final case class GameObject(
   model: Path,
   scale: Float,
   boxSize: Float,
-  instances: List[Instance]
+  instances: List[Instance],
+  rotation: Quaternion = Quaternion.Zero
 )
 
 final case class TerrainDefinition(
@@ -130,6 +131,19 @@ object GameLevel {
         boxSize = 5f,
         instances = List(
           Instance(Vector2(0f, 15f))
+        )
+      ),
+      GameObject(
+        models.tree,
+        scale = 0.02f,
+        rotation = Quaternion(AxisAngle4(toRadians(-90), 1, 0, 0)),
+        boxSize = 1f,
+        instances = List(
+          Instance(Vector2(10f, 10f)),
+          Instance(Vector2(-10f, 15f)),
+          Instance(Vector2(-11f, 5f)),
+          Instance(Vector2(-20f, 14f)),
+          Instance(Vector2(-13f, 11f))
         )
       )
     ),
