@@ -115,7 +115,7 @@ object Game extends GLApp[RenderContext, GameState] {
       fire,
       List.empty,
       gun,
-      Camera(initPosition),
+      Camera(initPosition, level.startFacing, 0),
       level.ambientLight,
       flashLight = makeSpotlight(initPosition),
       level.fog,

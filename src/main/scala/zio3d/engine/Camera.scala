@@ -4,8 +4,8 @@ import zio3d.core.math._
 
 final case class Camera(
   position: Vector3,
-  yaw: Float,
-  pitch: Float
+  yaw: Float, // degrees
+  pitch: Float // degrees
 ) {
 
   lazy val front: Vector3 =

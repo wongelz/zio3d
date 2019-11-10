@@ -93,7 +93,8 @@ final case class GameLevel(
   ambientLight: Vector3,
   staticObjects: List[GameObject],
   monsters: List[GameObject],
-  startPosition: Vector2
+  startPosition: Vector2,
+  startFacing: Float
 )
 
 object GameLevel {
@@ -168,7 +169,8 @@ object GameLevel {
             createArmyPositions(Vector2(0, -25f), 25, 8, 1.5f).map(p => Instance(p, toRadians(-90))).toList
       )
     ),
-    startPosition = Vector2.origin
+    startPosition = Vector2.origin,
+    startFacing = -90
   )
 
   def createArmyPositions(pos: Vector2, rows: Int, cols: Int, spacing: Float) = {
