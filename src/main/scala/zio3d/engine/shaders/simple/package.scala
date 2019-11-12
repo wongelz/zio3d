@@ -1,8 +1,8 @@
 package zio3d.engine.shaders
 
 import zio.ZIO
-import zio3d.engine.loaders.LoadingError
 import zio3d.engine._
+import zio3d.engine.loaders.LoadingError
 import zio3d.engine.shaders.simple.SimpleShaderInterpreter.SimpleShaderProgram
 
 package object simple {
@@ -23,4 +23,7 @@ package object simple {
     fixtures: Fixtures
   ): ZIO[SimpleShaderInterpreter, Nothing, Unit] =
     ZIO.accessM(_.simpleShaderInterpreter.render(program, items, transformation, fixtures))
+
+  final def cleanup(program: SimpleShaderProgram): ZIO[SimpleShaderInterpreter, Nothing, Unit] =
+    ZIO.accessM(_.simpleShaderInterpreter.cleanup(program))
 }

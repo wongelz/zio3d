@@ -12,8 +12,7 @@ import zio3d.core.math._
 import zio3d.engine._
 import zio3d.engine.loaders.assimp.anim.loadAnimMesh
 import zio3d.engine.loaders.assimp.loadStaticMesh
-import zio3d.engine.loaders.particles.loadFire
-import zio3d.engine.loaders.particles.loadGun
+import zio3d.engine.loaders.particles.{loadFire, loadGun}
 import zio3d.engine.loaders.terrain.loadTerrain
 import zio3d.engine.shaders.particle.ParticleShaderInterpreter.ParticleShaderProgram
 import zio3d.engine.shaders.scene.SceneShaderProgram
@@ -191,4 +190,10 @@ object Game extends GLApp[RenderContext, GameState] {
     s.nextState(input, currentTime) map { n =>
       (n, !input.keys.contains(Key.ESC))
     }
+
+  override def cleanup(c: RenderContext) =
+    shaders.simple.cleanup(c.simpleShaderProgram) *>
+    shaders.scene.cleanup(c.sceneShaderProgram) *>
+    shaders.skybox.cleanup(c.skyboxShaderProgram) *>
+    shaders.particle.cleanup(c.particleShaderProgram)
 }

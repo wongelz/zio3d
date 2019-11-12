@@ -4,7 +4,7 @@ import org.lwjgl.opengl.GL11._
 import org.lwjgl.opengl.GL13.GL_TEXTURE0
 import org.lwjgl.opengl.GL15.{GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_COPY, GL_STATIC_DRAW}
 import org.lwjgl.opengl.GL20
-import zio.{IO, ZIO}
+import zio.{IO, UIO, ZIO}
 import zio3d.core.buffers.Buffers
 import zio3d.core.gl.GL
 import zio3d.core.gl.GL.{Program, UniformLocation, _}
@@ -206,6 +206,9 @@ object ParticleShaderInterpreter {
       private def bindTexture(texture: Texture) =
         gl.activeTexture(GL_TEXTURE0) *>
           gl.bindTexture(GL_TEXTURE_2D, texture)
+
+      override def cleanup(program: ParticleShaderProgram): UIO[Unit] =
+        gl.deleteProgram(program.program)
     }
   }
 }

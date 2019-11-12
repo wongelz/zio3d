@@ -61,6 +61,8 @@ object GL {
 
     def useProgram(program: Program): UIO[Unit]
 
+    def deleteProgram(program: Program): UIO[Unit]
+
     def shaderSource(shader: Shader, src: CharSequence*): UIO[Unit]
 
     def compileShader(shader: Shader): UIO[Unit]
@@ -191,6 +193,9 @@ object GL {
 
       def useProgram(program: Program): UIO[Unit] =
         IO.effectTotal { GL20.glUseProgram(program.ref) }
+
+      def deleteProgram(program: Program): UIO[Unit] =
+        IO.effectTotal { GL20.glDeleteProgram(program.ref) }
 
       def shaderSource(shader: Shader, src: CharSequence*): UIO[Unit] =
         IO.effectTotal { GL20.glShaderSource(shader.ref, src: _*) }

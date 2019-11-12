@@ -23,4 +23,7 @@ package object skybox {
     fixtures: Fixtures
   ): ZIO[SkyboxShaderInterpreter, Nothing, Unit] =
     ZIO.accessM(_.skyboxShaderInterpreter.render(program, items, transformation, fixtures))
+
+  final def cleanup(program: SkyboxShaderProgram): ZIO[SkyboxShaderInterpreter, Nothing, Unit] =
+    ZIO.accessM(_.skyboxShaderInterpreter.cleanup(program))
 }

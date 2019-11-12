@@ -54,4 +54,6 @@ trait GLApp[R, S] {
     userInput: UserInput,
     currentTime: Long
   ): ZIO[RenderEnv, Nothing, (S, Continue)]
+
+  def cleanup(renderer: R): ZIO[RenderEnv, Nothing, Unit]
 }

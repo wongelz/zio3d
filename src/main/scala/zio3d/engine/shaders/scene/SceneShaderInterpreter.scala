@@ -454,7 +454,7 @@ object SceneShaderInterpreter {
         items: Iterable[GameItem],
         transformation: Transformation,
         fixtures: Fixtures
-      ): IO[Nothing, Unit] =
+      ) =
         gl.useProgram(program.program) *>
           gl.uniformMatrix4fv(program.uniProjectionMatrix, false, transformation.projectionMatrix) *>
           gl.uniform1f(program.uniSpecularPower, SpecularPower) *>
@@ -528,6 +528,9 @@ object SceneShaderInterpreter {
         gl.uniform1i(uni.active, if (fog.active) 1 else 0) *>
           gl.uniform3f(uni.colour, fog.color) *>
           gl.uniform1f(uni.density, fog.density)
+
+      def cleanup(program: SceneShaderProgram) =
+        gl.deleteProgram(program.program)
     }
   }
 

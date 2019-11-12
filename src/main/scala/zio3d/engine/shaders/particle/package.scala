@@ -24,4 +24,6 @@ package object particle {
   ): ZIO[ParticleShaderInterpreter, LoadingError, Mesh] =
     ZIO.accessM(_.particleShaderInterpreter.loadMesh(program, input))
 
+  final def cleanup(program: ParticleShaderProgram): ZIO[ParticleShaderInterpreter, Nothing, Unit] =
+    ZIO.accessM(_.particleShaderInterpreter.cleanup(program))
 }

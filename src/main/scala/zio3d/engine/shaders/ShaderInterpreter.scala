@@ -1,6 +1,6 @@
 package zio3d.engine.shaders
 
-import zio.IO
+import zio.{IO, UIO}
 import zio3d.core.buffers.Buffers
 import zio3d.core.gl.GL
 import zio3d.engine.loaders.LoadingError
@@ -52,6 +52,10 @@ object ShaderInterpreter {
       items: Iterable[GameItem],
       transformation: Transformation,
       fixtures: Fixtures
-    ): IO[Nothing, Unit]
+    ): UIO[Unit]
+
+    def cleanup(
+      program: P
+    ): UIO[Unit]
   }
 }

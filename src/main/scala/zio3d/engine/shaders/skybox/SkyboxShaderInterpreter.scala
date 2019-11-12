@@ -151,7 +151,7 @@ object SkyboxShaderInterpreter {
         items: Iterable[GameItem],
         transformation: Transformation,
         fixtures: Fixtures
-      ): IO[Nothing, Unit] =
+      ) =
         gl.useProgram(program.program) *>
           gl.uniform1i(program.uniSkybox, 0) *>
           gl.uniformMatrix4fv(program.uniProjectionMatrix, false, transformation.projectionMatrix) *>
@@ -180,6 +180,9 @@ object SkyboxShaderInterpreter {
       private def bindTexture(texture: Texture) =
         gl.activeTexture(GL_TEXTURE0) *>
           gl.bindTexture(GL_TEXTURE_CUBE_MAP, texture)
+
+      override def cleanup(program: SkyboxShaderProgram) =
+        gl.deleteProgram(program.program)
     }
   }
 

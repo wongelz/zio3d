@@ -137,7 +137,7 @@ object SimpleShaderInterpreter {
         items: Iterable[GameItem],
         transformation: Transformation,
         fixtures: Fixtures
-      ): IO[Nothing, Unit] =
+      ) =
         gl.useProgram(program.program) *>
           gl.uniformMatrix4fv(program.uniProjectionMatrix, false, transformation.projectionMatrix) *>
           gl.uniform1i(program.uniTextureSampler, 0) *>
@@ -165,6 +165,8 @@ object SimpleShaderInterpreter {
         gl.activeTexture(GL_TEXTURE0) *>
           gl.bindTexture(GL_TEXTURE_2D, texture)
 
+      def cleanup(program: SimpleShaderProgram) =
+        gl.deleteProgram(program.program)
     }
   }
 
