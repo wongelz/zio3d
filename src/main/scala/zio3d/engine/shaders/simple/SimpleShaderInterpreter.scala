@@ -141,12 +141,17 @@ object SimpleShaderInterpreter {
         gl.useProgram(program.program) *>
           gl.uniformMatrix4fv(program.uniProjectionMatrix, false, transformation.projectionMatrix) *>
           gl.uniform1i(program.uniTextureSampler, 0) *>
-          ZIO.foreach(items)(i => renderItem(program, i, transformation)) *>
+          ZIO.foreach(items)(i => renderItem(program, i.model, i, transformation)) *>
           gl.useProgram(Program.None)
 
-      private def renderItem(program: SimpleShaderProgram, item: GameItem, transformation: Transformation) =
+      private def renderItem(
+        program: SimpleShaderProgram,
+        model: Model,
+        item: GameItem,
+        transformation: Transformation
+      ) =
         gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.getModelViewMatrix(item)) *>
-          ZIO.foreach(item.meshes)(m => renderMesh(program, m))
+          ZIO.foreach(model.meshes)(m => renderMesh(program, m))
 
       private def renderMesh(program: SimpleShaderProgram, mesh: Mesh) =
         mesh.material.texture.fold(IO.unit)(bindTexture) *>

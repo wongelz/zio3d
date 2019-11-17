@@ -52,7 +52,7 @@ object TerrainLoader {
       for (row <- 0 until terrainSize; col <- 0 until terrainSize) {
         val xDisplacement = (col - (terrainSize - 1) / 2) * scale * HeightMapMesh.xLength
         val zDisplacement = (row - (terrainSize - 1) / 2) * scale * HeightMapMesh.zLength
-        val block = GameItem(heightMapMesh.mesh)
+        val block = GameItem(Model.still(heightMapMesh.mesh))
           .withScale(scale)
           .withPosition(xDisplacement, 0, zDisplacement)
         blocks(row * terrainSize + col) = block

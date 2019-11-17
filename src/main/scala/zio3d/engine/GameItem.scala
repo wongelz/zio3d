@@ -2,13 +2,29 @@ package zio3d.engine
 
 import zio3d.core.math.{AxisAngle4, Matrix4, Quaternion, Vector3}
 
-final case class GameItem(
+final case class Model(
   meshes: List[Mesh],
+  animation: Option[Animation]
+)
+
+object Model {
+  def still(mesh: Mesh): Model =
+    Model(List(mesh), None)
+
+  def still(meshes: List[Mesh]): Model =
+    Model(meshes, None)
+
+  def animated(meshes: List[Mesh], animation: Animation): Model =
+    Model(meshes, Some(animation))
+}
+
+final case class GameItem(
+  model: Model,
   position: Vector3,
   scale: Float,
   rotation: Quaternion,
   boxSize: Float, // axis-aligned box for very simple collision detection
-  animation: Option[Animation],
+  modelAnimation: Option[ModelAnimation],
   textureAnimation: Option[TextureAnimation]
 ) {
 
@@ -31,7 +47,7 @@ final case class GameItem(
     copy(boxSize = boxSize)
 
   def animate =
-    animation.fold(this)(a => copy(animation = Some(a.animate)))
+    copy(modelAnimation = modelAnimation.map(_.animate))
 
   def animateTexture(elapsedTime: Long) =
     textureAnimation.fold(this)(a => copy(textureAnimation = Some(a.animate(elapsedTime))))
@@ -43,14 +59,14 @@ final case class GameItem(
 }
 
 object GameItem {
-  def apply(mesh: Mesh): GameItem =
-    GameItem(List(mesh), Vector3(0, 0, -2), 0.5f, Quaternion.Zero, 0, None, None)
+  def apply(model: Model): GameItem =
+    GameItem(model, Vector3(0, 0, -2), 0.5f, Quaternion.Zero, 0, None, None)
 
-  def apply(mesh: Mesh, textureAnimation: TextureAnimation): GameItem =
-    GameItem(List(mesh), Vector3(0, 0, -2), 0.5f, Quaternion.Zero, 0, None, Some(textureAnimation))
+  def apply(model: Model, textureAnimation: TextureAnimation): GameItem =
+    GameItem(model, Vector3(0, 0, -2), 0.5f, Quaternion.Zero, 0, None, Some(textureAnimation))
 
-  def apply(meshes: List[Mesh], animation: Animation): GameItem =
-    GameItem(meshes, Vector3(0, 0, -2), 0.5f, Quaternion.Zero, 0, Some(animation), None)
+  def apply(model: Model, modelAnimation: ModelAnimation): GameItem =
+    GameItem(model, Vector3(0, 0, -2), 0.5f, Quaternion.Zero, 0, Some(modelAnimation), None)
 }
 
 final case class AnimatedFrame(
@@ -60,15 +76,16 @@ final case class AnimatedFrame(
 final case class Animation(
   name: String,
   frames: Array[AnimatedFrame],
-  duration: Double = 0,
-  currentFrame: Int = 0
+  duration: Double = 0
+)
+
+final case class ModelAnimation(
+  frames: Int,
+  currentFrame: Int
 ) {
 
-  def animate =
-    copy(currentFrame = (currentFrame + 1) % frames.length)
-
-  def getCurrentFrame =
-    frames(currentFrame)
+  def animate: ModelAnimation =
+    copy(currentFrame = (currentFrame + 1) % frames)
 }
 
 final case class TextureAnimation(

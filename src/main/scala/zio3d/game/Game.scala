@@ -129,7 +129,7 @@ object Game extends GLApp[RenderContext, GameState] {
     )
 
   private def loadSkybox(c: RenderContext, sky: SkyboxDefinition) =
-    shaders.skybox.loadMesh(c.skyboxShaderProgram, sky).map(GameItem(_).withScale(sky.scale))
+    shaders.skybox.loadMesh(c.skyboxShaderProgram, sky).map(Model.still).map(GameItem(_).withScale(sky.scale))
 
   private def loadStaticObjects(c: RenderContext, staticObjects: List[GameObject]) =
     ZIO
@@ -138,7 +138,7 @@ object Game extends GLApp[RenderContext, GameState] {
           i <- loadStaticMesh(o.model)
           m <- shaders.scene.loadMesh(c.sceneShaderProgram, i.head)
         } yield o.instances.map { i =>
-          GameItem(m).withScale(o.scale).withRotation(o.rotation).withPosition(i.position.x, 0, i.position.y)
+          GameItem(Model.still(m)).withScale(o.scale).withRotation(o.rotation).withPosition(i.position.x, 0, i.position.y)
         }
       }
       .map(_.flatten)
@@ -161,7 +161,7 @@ object Game extends GLApp[RenderContext, GameState] {
       .foreach(obj.instances) { i =>
         nextInt.map { rand =>
           terrain.getPosition(i.position) map { pos =>
-            GameItem(meshes, anim.copy(currentFrame = abs(rand) % numFrames))
+            GameItem(Model.animated(meshes, anim), ModelAnimation(numFrames, currentFrame = abs(rand) % numFrames))
               .withRotation(AxisAngle4(i.orientation, 0, 1, 0))
               .withScale(obj.scale)
               .withPosition(pos)
@@ -193,7 +193,7 @@ object Game extends GLApp[RenderContext, GameState] {
 
   override def cleanup(c: RenderContext) =
     shaders.simple.cleanup(c.simpleShaderProgram) *>
-    shaders.scene.cleanup(c.sceneShaderProgram) *>
-    shaders.skybox.cleanup(c.skyboxShaderProgram) *>
-    shaders.particle.cleanup(c.particleShaderProgram)
+      shaders.scene.cleanup(c.sceneShaderProgram) *>
+      shaders.skybox.cleanup(c.skyboxShaderProgram) *>
+      shaders.particle.cleanup(c.particleShaderProgram)
 }

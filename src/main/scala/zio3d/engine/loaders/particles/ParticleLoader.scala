@@ -65,7 +65,7 @@ object ParticleLoader {
         for {
           mesh <- particleShaderInterpreter.loadMesh(program, meshDefinition)
         } yield Gun(
-          Particle(GameItem(mesh).withPosition(0f, 1f, 0f).withScale(1.0f), Vector3.origin, ttl),
+          Particle(GameItem(Model.still(mesh)).withPosition(0f, 1f, 0f).withScale(1.0f), Vector3.origin, ttl),
           List.empty,
           maxParticles,
           firingRateMillis,
@@ -92,7 +92,7 @@ object ParticleLoader {
           td      = meshDefinition.material.texture
           texAnim = TextureAnimation(td.fold(1)(_.cols), td.fold(1)(_.rows), textureUpdateMillis)
         } yield Fire(
-          Particle(GameItem(mesh, texAnim).withPosition(0f, 1f, 0f).withScale(1.0f), particleSpeed, ttl),
+          Particle(GameItem(Model.still(mesh), texAnim).withPosition(0f, 1f, 0f).withScale(1.0f), particleSpeed, ttl),
           List.empty,
           maxParticles,
           creationPeriodMillis,

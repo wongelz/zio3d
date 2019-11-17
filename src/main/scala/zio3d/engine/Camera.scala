@@ -4,7 +4,7 @@ import zio3d.core.math._
 
 final case class Camera(
   position: Vector3,
-  yaw: Float, // degrees
+  yaw: Float,  // degrees
   pitch: Float // degrees
 ) {
 

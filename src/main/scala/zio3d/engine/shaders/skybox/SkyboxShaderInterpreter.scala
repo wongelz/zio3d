@@ -156,14 +156,19 @@ object SkyboxShaderInterpreter {
           gl.uniform1i(program.uniSkybox, 0) *>
           gl.uniformMatrix4fv(program.uniProjectionMatrix, false, transformation.projectionMatrix) *>
           gl.uniform3f(program.uniAmbientLight, 1.0f, 1.0f, 1.0f) *>
-          IO.foreach(items)(i => renderItem(program, i, transformation)) *>
+          IO.foreach(items)(i => renderItem(program, i.model, i, transformation)) *>
           gl.bindTexture(GL_TEXTURE_CUBE_MAP, Texture.None) *>
           gl.bindVertexArray(VertexArrayObject.None) *>
           gl.useProgram(Program.None)
 
-      private def renderItem(program: SkyboxShaderProgram, item: GameItem, transformation: Transformation) =
+      private def renderItem(
+        program: SkyboxShaderProgram,
+        model: Model,
+        item: GameItem,
+        transformation: Transformation
+      ) =
         gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.noTranslation.getModelViewMatrix(item)) *>
-          IO.foreach(item.meshes)(m => renderMesh(program, m))
+          IO.foreach(model.meshes)(m => renderMesh(program, m))
 
       private def renderMesh(program: SkyboxShaderProgram, mesh: Mesh): UIO[Unit] =
         gl.depthFunc(GL_LEQUAL) *>

@@ -467,15 +467,26 @@ object SceneShaderInterpreter {
           } *>
           gl.uniform1i(program.uniTextureSampler, 0) *>
           setUniform(program.uniFog, fixtures.fog) *>
-          ZIO.foreach(items)(i => renderItem(program, i, transformation)) *>
+          ZIO.foreach(items)(i => renderItem(program, i.model, i, transformation)) *>
           gl.useProgram(Program.None)
 
-      private def renderItem(program: SceneShaderProgram, item: GameItem, transformation: Transformation) =
+      private def animationFrame(model: Model, item: GameItem) =
+        for {
+          i <- item.modelAnimation
+          a <- model.animation
+        } yield a.frames(i.currentFrame)
+
+      private def renderItem(
+        program: SceneShaderProgram,
+        model: Model,
+        item: GameItem,
+        transformation: Transformation
+      ) =
         gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.getModelViewMatrix(item)) *>
-          item.animation.fold(IO.unit)(
-            a => gl.uniformMatrix4fvs(program.uniJointsMatrix, false, a.getCurrentFrame.jointMatrices)
-          ) *>
-          ZIO.foreach(item.meshes)(m => renderMesh(program, m))
+          animationFrame(model, item).fold(IO.unit) { f =>
+            gl.uniformMatrix4fvs(program.uniJointsMatrix, false, f.jointMatrices)
+          } *>
+          ZIO.foreach(model.meshes)(m => renderMesh(program, m))
 
       private def renderMesh(program: SceneShaderProgram, mesh: Mesh) =
         mesh.material.texture.fold(IO.unit)(bindTexture) *>

@@ -162,12 +162,17 @@ object ParticleShaderInterpreter {
           gl.uniform1i(program.uniTextureSampler, 0) *>
           gl.depthMask(false) *>
           gl.blendFunc(GL_SRC_ALPHA, GL_ONE) *>
-          ZIO.foreach(items)(i => renderItem(program, i, transformation)) *>
+          ZIO.foreach(items)(i => renderItem(program, i.model, i, transformation)) *>
           gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) *>
           gl.depthMask(true) *>
           gl.useProgram(Program.None)
 
-      private def renderItem(program: ParticleShaderProgram, item: GameItem, transformation: Transformation) = {
+      private def renderItem(
+        program: ParticleShaderProgram,
+        model: Model,
+        item: GameItem,
+        transformation: Transformation
+      ) = {
         val textureAnim = item.textureAnimation
         val numCols     = textureAnim.fold(1)(_.cols)
         val numRows     = textureAnim.fold(1)(_.rows)
@@ -182,7 +187,7 @@ object ParticleShaderInterpreter {
           gl.uniform1f(program.uniTexXOffset, texXOffset) *>
           gl.uniform1f(program.uniTexYOffset, texYOffset) *>
           gl.uniformMatrix4fv(program.uniModelViewMatrix, false, buildModelViewMatrix(transformation, item)) *>
-          ZIO.foreach(item.meshes)(m => renderMesh(program, m))
+          ZIO.foreach(model.meshes)(m => renderMesh(program, m))
       }
 
       private def buildModelViewMatrix(t: Transformation, i: GameItem) = {
