@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 import zio.{IO, ZIO}
 import zio3d.core.images.{Image, Images}
+import zio3d.core.math.Vector3
 import zio3d.engine._
 import zio3d.engine.loaders.LoadingError
 import zio3d.engine.loaders.heightmap._
@@ -52,18 +53,18 @@ object TerrainLoader {
       for (row <- 0 until terrainSize; col <- 0 until terrainSize) {
         val xDisplacement = (col - (terrainSize - 1) / 2) * scale * HeightMapMesh.xLength
         val zDisplacement = (row - (terrainSize - 1) / 2) * scale * HeightMapMesh.zLength
+        val inst = ItemInstance(Vector3(xDisplacement, 0, zDisplacement), scale)
         val block = GameItem(Model.still(heightMapMesh.mesh))
-          .withScale(scale)
-          .withPosition(xDisplacement, 0, zDisplacement)
+          .spawn(inst)
         blocks(row * terrainSize + col) = block
-        boundingBoxes(row)(col) = getBoundingBox(block)
+        boundingBoxes(row)(col) = getBoundingBox(inst)
       }
       Terrain(blocks.toList, boundingBoxes, heightMapMesh, terrainSize, i.width - 1, i.height - 1)
     }
 
-    private def getBoundingBox(terrainBlock: GameItem): Box2D = {
-      val scale    = terrainBlock.scale
-      val position = terrainBlock.position
+    private def getBoundingBox(i: ItemInstance): Box2D = {
+      val scale    = i.scale
+      val position = i.position
       val topLeftX = HeightMapMesh.StartX * scale + position.x
       val topLeftZ = HeightMapMesh.StartZ * scale + position.z
       val width    = Math.abs(HeightMapMesh.StartX * 2) * scale

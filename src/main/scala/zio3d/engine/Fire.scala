@@ -5,6 +5,7 @@ import zio.{random, ZIO}
 import zio3d.core.math.Vector3
 
 final case class Fire(
+  model: Model,
   baseParticle: Particle,
   particles: List[Particle],
   maxParticles: Int,
@@ -26,8 +27,8 @@ final case class Fire(
       lastCreationTime = 0
     )
 
-  def renderItems: List[GameItem] =
-    particles.map(_.item)
+  def gameItem: GameItem =
+    GameItem(model, particles.map(_.item))
 
   def update(now: Long, elapsedTime: Long): ZIO[Random, Nothing, Option[Fire]] =
     if (now > creationTime + ttl) {

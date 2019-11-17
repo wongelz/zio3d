@@ -3,7 +3,7 @@ package zio3d.engine
 import zio3d.core.math.Vector3
 
 final case class Particle(
-  item: GameItem,
+  item: ItemInstance,
   speed: Vector3,
   ttl: Long
 ) {

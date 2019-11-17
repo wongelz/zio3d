@@ -3,6 +3,7 @@ package zio3d.engine
 import zio3d.core.math.Vector3
 
 final case class Gun(
+  bulletModel: Model,
   baseParticle: Particle,
   particles: List[Particle],
   maxParticles: Int,
@@ -10,7 +11,7 @@ final case class Gun(
   lastFireTime: Long,
   speed: Float
 ) {
-  def renderItems: List[GameItem] =
+  def renderItems: List[ItemInstance] =
     particles.map(_.item)
 
   def update(elapsedTime: Long): Gun =

@@ -18,11 +18,11 @@ package object skybox {
 
   final def render(
     program: SkyboxShaderProgram,
-    items: Iterable[GameItem],
+    item: GameItem,
     transformation: Transformation,
     fixtures: Fixtures
   ): ZIO[SkyboxShaderInterpreter, Nothing, Unit] =
-    ZIO.accessM(_.skyboxShaderInterpreter.render(program, items, transformation, fixtures))
+    ZIO.accessM(_.skyboxShaderInterpreter.render(program, item, transformation, fixtures))
 
   final def cleanup(program: SkyboxShaderProgram): ZIO[SkyboxShaderInterpreter, Nothing, Unit] =
     ZIO.accessM(_.skyboxShaderInterpreter.cleanup(program))

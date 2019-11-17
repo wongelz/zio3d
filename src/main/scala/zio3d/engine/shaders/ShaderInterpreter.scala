@@ -42,14 +42,14 @@ object ShaderInterpreter {
      * Use the shader program defined by this pipeline to render the given items.
      *
      * @param program        shader program.
-     * @param items to render.
+     * @param item to render.
      * @param transformation to apply.
      * @param fixtures environment fixtures (light, fog, etc).
      * @return .
      */
     def render(
       program: P,
-      items: Iterable[GameItem],
+      item: GameItem,
       transformation: Transformation,
       fixtures: Fixtures
     ): UIO[Unit]

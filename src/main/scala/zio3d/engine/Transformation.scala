@@ -10,12 +10,12 @@ final case class Transformation(
   def noTranslation: Transformation =
     copy(viewMatrix = viewMatrix.copy(m30 = 0, m31 = 0, m32 = 0))
 
-  def getModelMatrix(gameItem: GameItem): Matrix4 =
+  def getModelMatrix(i: ItemInstance): Matrix4 =
     Matrix4.identity
-      .translate(gameItem.position)
-      .rotate(gameItem.rotation)
-      .scale(gameItem.scale)
+      .translate(i.position)
+      .rotate(i.rotation)
+      .scale(i.scale)
 
-  def getModelViewMatrix(gameItem: GameItem): Matrix4 =
-    viewMatrix * getModelMatrix(gameItem)
+  def getModelViewMatrix(i: ItemInstance): Matrix4 =
+    viewMatrix * getModelMatrix(i)
 }

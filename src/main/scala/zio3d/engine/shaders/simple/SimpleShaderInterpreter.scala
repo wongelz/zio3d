@@ -134,20 +134,20 @@ object SimpleShaderInterpreter {
 
       def render(
         program: SimpleShaderProgram,
-        items: Iterable[GameItem],
+        item: GameItem,
         transformation: Transformation,
         fixtures: Fixtures
       ) =
         gl.useProgram(program.program) *>
           gl.uniformMatrix4fv(program.uniProjectionMatrix, false, transformation.projectionMatrix) *>
           gl.uniform1i(program.uniTextureSampler, 0) *>
-          ZIO.foreach(items)(i => renderItem(program, i.model, i, transformation)) *>
+          ZIO.foreach(item.instances)(i => renderItem(program, item.model, i, transformation)) *>
           gl.useProgram(Program.None)
 
       private def renderItem(
         program: SimpleShaderProgram,
         model: Model,
-        item: GameItem,
+        item: ItemInstance,
         transformation: Transformation
       ) =
         gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.getModelViewMatrix(item)) *>

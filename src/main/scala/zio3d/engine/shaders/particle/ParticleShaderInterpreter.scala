@@ -153,7 +153,7 @@ object ParticleShaderInterpreter {
 
       override def render(
         program: ParticleShaderProgram,
-        items: Iterable[GameItem],
+        item: GameItem,
         transformation: Transformation,
         fixtures: Fixtures
       ) =
@@ -162,7 +162,7 @@ object ParticleShaderInterpreter {
           gl.uniform1i(program.uniTextureSampler, 0) *>
           gl.depthMask(false) *>
           gl.blendFunc(GL_SRC_ALPHA, GL_ONE) *>
-          ZIO.foreach(items)(i => renderItem(program, i.model, i, transformation)) *>
+          ZIO.foreach(item.instances)(i => renderItem(program, item.model, i, transformation)) *>
           gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) *>
           gl.depthMask(true) *>
           gl.useProgram(Program.None)
@@ -170,7 +170,7 @@ object ParticleShaderInterpreter {
       private def renderItem(
         program: ParticleShaderProgram,
         model: Model,
-        item: GameItem,
+        item: ItemInstance,
         transformation: Transformation
       ) = {
         val textureAnim = item.textureAnimation
@@ -190,7 +190,7 @@ object ParticleShaderInterpreter {
           ZIO.foreach(model.meshes)(m => renderMesh(program, m))
       }
 
-      private def buildModelViewMatrix(t: Transformation, i: GameItem) = {
+      private def buildModelViewMatrix(t: Transformation, i: ItemInstance) = {
         val modelMatrix = t.getModelMatrix(i)
         t.viewMatrix * t.viewMatrix.transpose3x3(modelMatrix)
       }

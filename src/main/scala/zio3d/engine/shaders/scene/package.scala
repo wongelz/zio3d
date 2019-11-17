@@ -17,11 +17,11 @@ package object scene {
 
   final def render(
     program: SceneShaderProgram,
-    items: Iterable[GameItem],
+    item: GameItem,
     transformation: Transformation,
     fixtures: Fixtures
   ): ZIO[SceneShaderInterpreter, Nothing, Unit] =
-    ZIO.accessM(_.sceneShaderInterpreter.render(program, items, transformation, fixtures))
+    ZIO.accessM(_.sceneShaderInterpreter.render(program, item, transformation, fixtures))
 
   final def cleanup(program: SceneShaderProgram): ZIO[SceneShaderInterpreter, Nothing, Unit] =
     ZIO.accessM(_.sceneShaderInterpreter.cleanup(program))

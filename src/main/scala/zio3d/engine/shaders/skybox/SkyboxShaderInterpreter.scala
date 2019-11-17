@@ -148,7 +148,7 @@ object SkyboxShaderInterpreter {
 
       def render(
         program: SkyboxShaderProgram,
-        items: Iterable[GameItem],
+        item: GameItem,
         transformation: Transformation,
         fixtures: Fixtures
       ) =
@@ -156,7 +156,7 @@ object SkyboxShaderInterpreter {
           gl.uniform1i(program.uniSkybox, 0) *>
           gl.uniformMatrix4fv(program.uniProjectionMatrix, false, transformation.projectionMatrix) *>
           gl.uniform3f(program.uniAmbientLight, 1.0f, 1.0f, 1.0f) *>
-          IO.foreach(items)(i => renderItem(program, i.model, i, transformation)) *>
+          IO.foreach(item.instances)(i => renderItem(program, item.model, i, transformation)) *>
           gl.bindTexture(GL_TEXTURE_CUBE_MAP, Texture.None) *>
           gl.bindVertexArray(VertexArrayObject.None) *>
           gl.useProgram(Program.None)
@@ -164,7 +164,7 @@ object SkyboxShaderInterpreter {
       private def renderItem(
         program: SkyboxShaderProgram,
         model: Model,
-        item: GameItem,
+        item: ItemInstance,
         transformation: Transformation
       ) =
         gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.noTranslation.getModelViewMatrix(item)) *>

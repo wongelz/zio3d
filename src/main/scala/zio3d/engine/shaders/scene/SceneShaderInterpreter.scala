@@ -451,7 +451,7 @@ object SceneShaderInterpreter {
 
       def render(
         program: SceneShaderProgram,
-        items: Iterable[GameItem],
+        item: GameItem,
         transformation: Transformation,
         fixtures: Fixtures
       ) =
@@ -467,10 +467,10 @@ object SceneShaderInterpreter {
           } *>
           gl.uniform1i(program.uniTextureSampler, 0) *>
           setUniform(program.uniFog, fixtures.fog) *>
-          ZIO.foreach(items)(i => renderItem(program, i.model, i, transformation)) *>
+          ZIO.foreach(item.instances)(i => renderItem(program, item.model, i, transformation)) *>
           gl.useProgram(Program.None)
 
-      private def animationFrame(model: Model, item: GameItem) =
+      private def animationFrame(model: Model, item: ItemInstance) =
         for {
           i <- item.modelAnimation
           a <- model.animation
@@ -479,7 +479,7 @@ object SceneShaderInterpreter {
       private def renderItem(
         program: SceneShaderProgram,
         model: Model,
-        item: GameItem,
+        item: ItemInstance,
         transformation: Transformation
       ) =
         gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.getModelViewMatrix(item)) *>

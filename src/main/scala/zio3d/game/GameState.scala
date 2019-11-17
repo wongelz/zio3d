@@ -43,19 +43,19 @@ final case class GameState(
   final val cameraHeight     = 1.8f
   final val mouseSensitivity = 5.0f
 
-  override def skyboxItems: List[GameItem] = List(skybox)
+  override def skyboxItems = List(skybox)
 
   override def sceneItems = monsters ++ sceneObjects ++ terrain.blocks
 
   override def simpleItems = simpleObjects
 
-  override def particles: List[GameItem] = fires.flatMap(_.renderItems) ++ gun.renderItems
+  override def particles = GameItem(gun.bulletModel, gun.renderItems) :: fires.map(_.gameItem)
 
   override def fixtures = Fixtures(LightSources(ambientLight, None, Nil, List(flashLight)), fog)
 
   def nextState(userInput: UserInput, currentTime: Long): ZIO[Random, Nothing, GameState] = {
     val elapsedMillis                                   = currentTime - time
-    val (survivingMonsters, destroyedBullets, newFires) = handleBulletCollisions(currentTime, monsters, Nil, Nil, Nil)
+    val (survivingMonsters, destroyedBullets, newFires) = handleBulletCollisions(currentTime, monsters)
 
     for {
       p <- ZIO.foreach(fires)(e => e.update(currentTime, elapsedMillis))
@@ -78,14 +78,23 @@ final case class GameState(
     )
   }
 
+  private def handleBulletCollisions(
+    time: Long,
+    monsters: List[GameItem]
+  ): (List[GameItem], List[Particle], List[Fire]) =
+    monsters.foldLeft((List.empty[GameItem], List.empty[Particle], List.empty[Fire])) { (acc, m) =>
+      val (survivors, destroyedBullets, newFires) = handleBulletCollisions(time, m.instances, Nil, Nil, Nil)
+      (GameItem(m.model, survivors) :: acc._1, destroyedBullets ++ acc._2, newFires ++ acc._3)
+    }
+
   @tailrec
   private def handleBulletCollisions(
     time: Long,
-    mons: List[GameItem],
-    survivingMons: List[GameItem],
+    mons: List[ItemInstance],
+    survivingMons: List[ItemInstance],
     destroyedBullets: List[Particle],
     newFires: List[Fire]
-  ): (List[GameItem], List[Particle], List[Fire]) =
+  ): (List[ItemInstance], List[Particle], List[Fire]) =
     mons match {
       case Nil => (survivingMons, destroyedBullets, newFires)
       case m :: ms =>

@@ -18,11 +18,11 @@ package object simple {
 
   final def render(
     program: SimpleShaderProgram,
-    items: Iterable[GameItem],
+    item: GameItem,
     transformation: Transformation,
     fixtures: Fixtures
   ): ZIO[SimpleShaderInterpreter, Nothing, Unit] =
-    ZIO.accessM(_.simpleShaderInterpreter.render(program, items, transformation, fixtures))
+    ZIO.accessM(_.simpleShaderInterpreter.render(program, item, transformation, fixtures))
 
   final def cleanup(program: SimpleShaderProgram): ZIO[SimpleShaderInterpreter, Nothing, Unit] =
     ZIO.accessM(_.simpleShaderInterpreter.cleanup(program))

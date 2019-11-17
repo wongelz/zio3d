@@ -20,6 +20,22 @@ object Model {
 
 final case class GameItem(
   model: Model,
+  instances: List[ItemInstance]
+) {
+
+  def spawn(i: ItemInstance) =
+    copy(instances = i :: instances)
+
+  def animate =
+    copy(instances = instances.map(_.animate))
+}
+
+object GameItem {
+  def apply(model: Model): GameItem =
+    GameItem(model, Nil)
+}
+
+final case class ItemInstance(
   position: Vector3,
   scale: Float,
   rotation: Quaternion,
@@ -28,10 +44,10 @@ final case class GameItem(
   textureAnimation: Option[TextureAnimation]
 ) {
 
-  def withPosition(x: Float, y: Float, z: Float): GameItem =
+  def withPosition(x: Float, y: Float, z: Float): ItemInstance =
     withPosition(Vector3(x, y, z))
 
-  def withPosition(position: Vector3): GameItem =
+  def withPosition(position: Vector3): ItemInstance =
     copy(position = position)
 
   def withRotation(rotation: Quaternion) =
@@ -58,15 +74,16 @@ final case class GameItem(
       p.z >= (position.z - boxSize) && p.z <= (position.z + boxSize)
 }
 
-object GameItem {
-  def apply(model: Model): GameItem =
-    GameItem(model, Vector3(0, 0, -2), 0.5f, Quaternion.Zero, 0, None, None)
+object ItemInstance {
 
-  def apply(model: Model, textureAnimation: TextureAnimation): GameItem =
-    GameItem(model, Vector3(0, 0, -2), 0.5f, Quaternion.Zero, 0, None, Some(textureAnimation))
+  def apply(position: Vector3, scale: Float): ItemInstance =
+    ItemInstance(position, scale, Quaternion.Zero, 0, None, None)
 
-  def apply(model: Model, modelAnimation: ModelAnimation): GameItem =
-    GameItem(model, Vector3(0, 0, -2), 0.5f, Quaternion.Zero, 0, Some(modelAnimation), None)
+  def apply(position: Vector3, scale: Float, textureAnimation: TextureAnimation): ItemInstance =
+    ItemInstance(position, scale, Quaternion.Zero, 0, None, Some(textureAnimation))
+
+  def apply(position: Vector3, scale: Float, rotation: Quaternion): ItemInstance =
+    ItemInstance(position, scale, rotation, 0, None, None)
 }
 
 final case class AnimatedFrame(

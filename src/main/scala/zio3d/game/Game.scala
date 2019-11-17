@@ -129,7 +129,7 @@ object Game extends GLApp[RenderContext, GameState] {
     )
 
   private def loadSkybox(c: RenderContext, sky: SkyboxDefinition) =
-    shaders.skybox.loadMesh(c.skyboxShaderProgram, sky).map(Model.still).map(GameItem(_).withScale(sky.scale))
+    shaders.skybox.loadMesh(c.skyboxShaderProgram, sky).map(Model.still).map(GameItem(_).spawn(ItemInstance(Vector3.origin, sky.scale)))
 
   private def loadStaticObjects(c: RenderContext, staticObjects: List[GameObject]) =
     ZIO
@@ -138,7 +138,8 @@ object Game extends GLApp[RenderContext, GameState] {
           i <- loadStaticMesh(o.model)
           m <- shaders.scene.loadMesh(c.sceneShaderProgram, i.head)
         } yield o.instances.map { i =>
-          GameItem(Model.still(m)).withScale(o.scale).withRotation(o.rotation).withPosition(i.position.x, 0, i.position.y)
+          GameItem(Model.still(m))
+            .spawn(ItemInstance(Vector3(i.position.x, 0, i.position.y), o.scale, o.rotation))
         }
       }
       .map(_.flatten)
@@ -150,9 +151,9 @@ object Game extends GLApp[RenderContext, GameState] {
           a <- loadAnimMesh(o.model)
           m <- ZIO.foreach(a.meshes)(m => shaders.scene.loadMesh(c.sceneShaderProgram, m))
           i <- spawnInstances(o, m, a.animations, terrain)
-        } yield i
+        } yield GameItem(Model.animated(m, a.animations.head), i)
       }
-      .map(_.flatten)
+//      .map(_.flatten)
 
   private def spawnInstances(obj: GameObject, meshes: List[Mesh], animations: List[Animation], terrain: Terrain) = {
     val anim      = animations.head
@@ -161,11 +162,12 @@ object Game extends GLApp[RenderContext, GameState] {
       .foreach(obj.instances) { i =>
         nextInt.map { rand =>
           terrain.getPosition(i.position) map { pos =>
-            GameItem(Model.animated(meshes, anim), ModelAnimation(numFrames, currentFrame = abs(rand) % numFrames))
-              .withRotation(AxisAngle4(i.orientation, 0, 1, 0))
-              .withScale(obj.scale)
-              .withPosition(pos)
-              .withBoxSize(obj.boxSize)
+//            GameItem(Model.animated(meshes, anim), ModelAnimation(numFrames, currentFrame = abs(rand) % numFrames))
+//              .withRotation(AxisAngle4(i.orientation, 0, 1, 0))
+//              .withScale(obj.scale)
+//              .withPosition(pos)
+//              .withBoxSize(obj.boxSize)
+            ItemInstance(pos, obj.scale, Quaternion(AxisAngle4(i.orientation, 0, 1, 0)), obj.boxSize, Some(ModelAnimation(numFrames, currentFrame = abs(rand) % numFrames)), None)
           }
         }
       }
@@ -177,10 +179,10 @@ object Game extends GLApp[RenderContext, GameState] {
 
     gl.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT) *>
       gl.clearColor(0.0f, 0.0f, 0.0f, 0.0f) *>
-      shaders.simple.render(c.simpleShaderProgram, s.simpleItems, t, s.fixtures) *>
-      shaders.scene.render(c.sceneShaderProgram, s.sceneItems, t, s.fixtures) *>
-      shaders.skybox.render(c.skyboxShaderProgram, s.skyboxItems, t, s.fixtures) *>
-      shaders.particle.render(c.particleShaderProgram, s.particles, t, s.fixtures) *>
+      ZIO.foreach(s.simpleItems)(i => shaders.simple.render(c.simpleShaderProgram, i, t, s.fixtures)) *>
+      ZIO.foreach(s.sceneItems)(i => shaders.scene.render(c.sceneShaderProgram, i, t, s.fixtures)) *>
+      ZIO.foreach(s.skyboxItems)(i => shaders.skybox.render(c.skyboxShaderProgram, i, t, s.fixtures)) *>
+      ZIO.foreach(s.particles)(i => shaders.particle.render(c.particleShaderProgram, i, t, s.fixtures)) *>
       hud.render(c.hudContext, windowSize, s.hud) *>
       gl.enable(GL11.GL_DEPTH_TEST) *>
       gl.enable(GL11.GL_STENCIL_TEST)

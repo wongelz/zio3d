@@ -12,11 +12,11 @@ package object particle {
 
   final def render(
     program: ParticleShaderProgram,
-    items: Iterable[GameItem],
+    item: GameItem,
     transformation: Transformation,
     fixtures: Fixtures
   ): ZIO[ParticleShaderInterpreter, Nothing, Unit] =
-    ZIO.accessM(_.particleShaderInterpreter.render(program, items, transformation, fixtures))
+    ZIO.accessM(_.particleShaderInterpreter.render(program, item, transformation, fixtures))
 
   final def loadMesh(
     program: ParticleShaderProgram,

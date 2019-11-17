@@ -86,7 +86,7 @@ final case class Terrain(
 
   private def getWorldHeight(row: Int, col: Int, gameItem: GameItem) = {
     val y = heightMapMesh.getHeight(row, col)
-    y * gameItem.scale + gameItem.position.y
+    y * gameItem.instances.head.scale + gameItem.instances.head.position.y
   }
 
   private def interpolateHeight(pA: Vector3, pB: Vector3, pC: Vector3, x: Float, z: Float) = {
