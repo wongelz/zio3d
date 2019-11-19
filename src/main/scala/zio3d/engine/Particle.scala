@@ -36,8 +36,7 @@ object Particle {
     baseParticle: Particle,
     posInc: Float,
     speedInc: Float,
-    scaleInc: Float,
-    updateAnimInc: Long
+    scaleInc: Float
   ): Particle = {
     val item = baseParticle.item
       .withPosition(baseParticle.item.position + Vector3(posInc, posInc, posInc))

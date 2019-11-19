@@ -112,7 +112,6 @@ object Game extends GLApp[RenderContext, GameState] {
       List.empty,
       staticObjs,
       fire,
-      List.empty,
       gun,
       Camera(initPosition, level.startFacing, 0),
       level.ambientLight,
@@ -129,7 +128,10 @@ object Game extends GLApp[RenderContext, GameState] {
     )
 
   private def loadSkybox(c: RenderContext, sky: SkyboxDefinition) =
-    shaders.skybox.loadMesh(c.skyboxShaderProgram, sky).map(Model.still).map(GameItem(_).spawn(ItemInstance(Vector3.origin, sky.scale)))
+    shaders.skybox
+      .loadMesh(c.skyboxShaderProgram, sky)
+      .map(Model.still)
+      .map(GameItem(_).spawn(ItemInstance(Vector3.origin, sky.scale)))
 
   private def loadStaticObjects(c: RenderContext, staticObjects: List[GameObject]) =
     ZIO
@@ -153,7 +155,6 @@ object Game extends GLApp[RenderContext, GameState] {
           i <- spawnInstances(o, m, a.animations, terrain)
         } yield GameItem(Model.animated(m, a.animations.head), i)
       }
-//      .map(_.flatten)
 
   private def spawnInstances(obj: GameObject, meshes: List[Mesh], animations: List[Animation], terrain: Terrain) = {
     val anim      = animations.head
@@ -162,12 +163,14 @@ object Game extends GLApp[RenderContext, GameState] {
       .foreach(obj.instances) { i =>
         nextInt.map { rand =>
           terrain.getPosition(i.position) map { pos =>
-//            GameItem(Model.animated(meshes, anim), ModelAnimation(numFrames, currentFrame = abs(rand) % numFrames))
-//              .withRotation(AxisAngle4(i.orientation, 0, 1, 0))
-//              .withScale(obj.scale)
-//              .withPosition(pos)
-//              .withBoxSize(obj.boxSize)
-            ItemInstance(pos, obj.scale, Quaternion(AxisAngle4(i.orientation, 0, 1, 0)), obj.boxSize, Some(ModelAnimation(numFrames, currentFrame = abs(rand) % numFrames)), None)
+            ItemInstance(
+              pos,
+              obj.scale,
+              Quaternion(AxisAngle4(i.orientation, 0, 1, 0)),
+              obj.boxSize,
+              Some(ModelAnimation(numFrames, currentFrame = abs(rand) % numFrames)),
+              None
+            )
           }
         }
       }

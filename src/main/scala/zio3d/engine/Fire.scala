@@ -4,34 +4,64 @@ import zio.random.Random
 import zio.{random, ZIO}
 import zio3d.core.math.Vector3
 
-final case class Fire(
-  model: Model,
-  baseParticle: Particle,
-  particles: List[Particle],
+final case class FireSettings(
   maxParticles: Int,
+  particleSpeed: Vector3,
+  particleScale: Float,
   creationPeriodMillis: Long,
-  lastCreationTime: Long,
-  creationTime: Long,
   ttl: Long,
   speedRndRange: Float,
   positionRndRange: Float,
   scaleRndRange: Float,
   animRange: Float
-) {
+)
 
-  def duplicate(time: Long, position: Vector3): Fire =
+final case class Fires(
+  model: Model, // model for all fires
+  textureAnimation: TextureAnimation,
+  settings: FireSettings,
+  fires: List[Fire]
+) {
+  def gameItem: GameItem = {
+    val items = for {
+      f <- fires
+      p <- f.particles
+    } yield p.item
+    GameItem(model, items)
+  }
+
+  def update(now: Long, elapsedTime: Long): ZIO[Random, Nothing, Fires] =
+    ZIO.foreach(fires)(_.update(settings, now, elapsedTime)) map { fs =>
+      copy(fires = fs.flatten)
+    }
+
+  def startFire(time: Long, position: Vector3): Fires =
     copy(
-      baseParticle = baseParticle.copy(item = baseParticle.item.withPosition(position)),
-      particles = Nil,
-      creationTime = time,
-      lastCreationTime = 0
+      fires = Fire(
+        Particle(
+          ItemInstance(position, settings.particleScale, textureAnimation),
+          settings.particleSpeed,
+          settings.ttl
+        ),
+        Nil,
+        time,
+        0
+      ) :: Nil
     )
 
-  def gameItem: GameItem =
-    GameItem(model, particles.map(_.item))
+  def ++(o: Fires): Fires =
+    copy(fires = fires ++ o.fires)
+}
 
-  def update(now: Long, elapsedTime: Long): ZIO[Random, Nothing, Option[Fire]] =
-    if (now > creationTime + ttl) {
+final case class Fire(
+  baseParticle: Particle,
+  particles: List[Particle],
+  creationTime: Long,
+  lastCreationTime: Long
+) {
+
+  def update(settings: FireSettings, now: Long, elapsedTime: Long): ZIO[Random, Nothing, Option[Fire]] =
+    if (now > creationTime + settings.ttl) {
       if (particles.isEmpty) {
         ZIO.succeed(None)
       } else {
@@ -45,7 +75,7 @@ final case class Fire(
       }
     } else {
       for {
-        n <- createParticle(now)
+        n <- createParticle(settings, now)
       } yield Some(
         copy(
           particles = n.toList ++ updateParticles(elapsedTime),
@@ -61,22 +91,20 @@ final case class Fire(
       p.update(elapsedTime).fold(ps)(_ :: ps)
     }
 
-  def createParticle(time: Long): ZIO[Random, Nothing, Option[Particle]] =
-    if (time - lastCreationTime >= creationPeriodMillis && particles.length < maxParticles) {
+  def createParticle(settings: FireSettings, time: Long): ZIO[Random, Nothing, Option[Particle]] =
+    if (time - lastCreationTime >= settings.creationPeriodMillis && particles.length < settings.maxParticles) {
       for {
         rs       <- random.nextBoolean
         sign     = if (rs) 1.0f else -1.0f
         speedInc <- random.nextFloat
         posInc   <- random.nextFloat
         scaleInc <- random.nextFloat
-        animInc  <- random.nextLong
       } yield Some(
         Particle.create(
           baseParticle,
-          sign * posInc * positionRndRange,
-          sign * speedInc * speedRndRange,
-          sign * scaleInc * scaleRndRange,
-          sign.toLong * (animInc * animRange).toLong
+          sign * posInc * settings.positionRndRange,
+          sign * speedInc * settings.speedRndRange,
+          sign * scaleInc * settings.scaleRndRange
         )
       )
     } else {

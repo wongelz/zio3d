@@ -41,7 +41,7 @@ object ParticleLoader {
       positionRndRange: Float,
       scaleRndRange: Float,
       animRange: Float
-    ): IO[LoadingError, Fire]
+    ): IO[LoadingError, Fires]
   }
 
   trait Live
@@ -92,19 +92,21 @@ object ParticleLoader {
           mesh    <- particleShaderInterpreter.loadMesh(program, meshDefinition)
           td      = meshDefinition.material.texture
           texAnim = TextureAnimation(td.fold(1)(_.cols), td.fold(1)(_.rows), textureUpdateMillis)
-        } yield Fire(
+        } yield Fires(
           Model.still(mesh),
-          Particle(ItemInstance(Vector3(0f, 1f, 0f), 1.0f, texAnim), particleSpeed, ttl),
-          List.empty,
-          maxParticles,
-          creationPeriodMillis,
-          0L,
-          0L,
-          ttl,
-          speedRndRange,
-          positionRndRange,
-          scaleRndRange,
-          animRange
+          texAnim,
+          FireSettings(
+            maxParticles,
+            particleSpeed,
+            1.0f,
+            creationPeriodMillis,
+            ttl,
+            speedRndRange,
+            positionRndRange,
+            scaleRndRange,
+            animRange
+          ),
+          List.empty
         )
     }
   }

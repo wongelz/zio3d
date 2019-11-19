@@ -28,8 +28,7 @@ final case class GameState(
   monsters: List[GameItem],
   simpleObjects: List[GameItem],
   sceneObjects: List[GameItem],
-  baseFire: Fire, // template for creating more fires
-  fires: List[Fire],
+  fires: Fires,
   gun: Gun,
   camera: Camera,
   ambientLight: Vector3,
@@ -49,16 +48,16 @@ final case class GameState(
 
   override def simpleItems = simpleObjects
 
-  override def particles = GameItem(gun.bulletModel, gun.renderItems) :: fires.map(_.gameItem)
+  override def particles = GameItem(gun.bulletModel, gun.renderItems) :: fires.gameItem :: Nil
 
   override def fixtures = Fixtures(LightSources(ambientLight, None, Nil, List(flashLight)), fog)
 
   def nextState(userInput: UserInput, currentTime: Long): ZIO[Random, Nothing, GameState] = {
     val elapsedMillis                                   = currentTime - time
-    val (survivingMonsters, destroyedBullets, newFires) = handleBulletCollisions(currentTime, monsters)
+    val (survivingMonsters, destroyedBullets, newFires) = handleBulletCollisions(currentTime, monsters, fires)
 
     for {
-      p <- ZIO.foreach(fires)(e => e.update(currentTime, elapsedMillis))
+      f <- fires.update(currentTime, elapsedMillis)
       g = if (userInput.mouseButtons.contains(MouseButton.BUTTON_LEFT))
         gun
           .copy(particles = gun.particles.diff(destroyedBullets))
@@ -66,24 +65,26 @@ final case class GameState(
           .fire(currentTime, camera.position, camera.front)
       else gun.copy(particles = gun.particles.diff(destroyedBullets)).update(elapsedMillis)
       c = nextCamera(userInput, elapsedMillis)
-      f = flashLight.withDirection(c.front).withPosition(c.position)
+      l = flashLight.withDirection(c.front).withPosition(c.position)
     } yield copy(
       time = currentTime,
       monsters = survivingMonsters.map(_.animate),
-      fires = p.flatten ++ newFires,
+      fires = f ++ newFires,
       gun = g,
       camera = c,
-      flashLight = f,
+      flashLight = l,
       hud = hud.incFrames(currentTime)
     )
   }
 
   private def handleBulletCollisions(
     time: Long,
-    monsters: List[GameItem]
-  ): (List[GameItem], List[Particle], List[Fire]) =
-    monsters.foldLeft((List.empty[GameItem], List.empty[Particle], List.empty[Fire])) { (acc, m) =>
-      val (survivors, destroyedBullets, newFires) = handleBulletCollisions(time, m.instances, Nil, Nil, Nil)
+    monsters: List[GameItem],
+    fires: Fires
+  ): (List[GameItem], List[Particle], Fires) =
+    monsters.foldLeft((List.empty[GameItem], List.empty[Particle], fires.copy(fires = Nil))) { (acc, m) =>
+      val (survivors, destroyedBullets, newFires) =
+        handleBulletCollisions(time, m.instances, Nil, Nil, fires.copy(fires = Nil))
       (GameItem(m.model, survivors) :: acc._1, destroyedBullets ++ acc._2, newFires ++ acc._3)
     }
 
@@ -93,8 +94,8 @@ final case class GameState(
     mons: List[ItemInstance],
     survivingMons: List[ItemInstance],
     destroyedBullets: List[Particle],
-    newFires: List[Fire]
-  ): (List[ItemInstance], List[Particle], List[Fire]) =
+    newFires: Fires
+  ): (List[ItemInstance], List[Particle], Fires) =
     mons match {
       case Nil => (survivingMons, destroyedBullets, newFires)
       case m :: ms =>
@@ -105,7 +106,7 @@ final case class GameState(
               ms,
               survivingMons,
               p :: destroyedBullets,
-              baseFire.duplicate(time, p.item.position) :: newFires
+              newFires.startFire(time, p.item.position)
             )
           case None =>
             handleBulletCollisions(time, ms, m :: survivingMons, destroyedBullets, newFires)
