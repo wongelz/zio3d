@@ -29,9 +29,9 @@ import scala.concurrent.ExecutionContext
  * The entry-point for a LWJGL application running on ZIO.
  */
 trait GLRuntime extends Runtime[RenderEnv] {
-  val Platform: Platform = PlatformLive.Default
+  override val platform: Platform = PlatformLive.Default
 
-  override val Environment: RenderEnv = new Clock.Live with Buffers.Live with GL.Live with GLFW.Live
+  override val environment: RenderEnv = new Clock.Live with Buffers.Live with GL.Live with GLFW.Live
   with SimpleShaderInterpreter.Live with SkyboxShaderInterpreter.Live with SceneShaderInterpreter.Live
   with ParticleShaderInterpreter with TerrainLoader.Live with HudRenderer.Live with StaticMeshLoader.Live
   with AnimMeshLoader.Live with Blocking.Live with Random.Live with ParticleLoader.Live with GLWindow.Live

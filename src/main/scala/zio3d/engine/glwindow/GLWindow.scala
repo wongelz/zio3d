@@ -48,9 +48,9 @@ object GLWindow {
           glfw.windowHint(GLFW_FOCUSED, GLFW_TRUE)
 
       def close(w: Window) =
-        (glfw.freeCallbacks(w) *>
+        glfw.freeCallbacks(w) *>
           glfw.destroyWindow(w) *>
-          glfw.terminate).either.unit
+          glfw.terminate
 
       def getUserInput(
         w: Window,

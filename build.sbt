@@ -6,7 +6,7 @@ version := "0.1"
 
 scalaVersion := "2.13.0"
 
-lazy val zioVersion    = "1.0.0-RC16"
+lazy val zioVersion    = "1.0.0-RC17"
 lazy val lwjglVersion  = "3.2.1"
 
 // os=windows/linux/macos
