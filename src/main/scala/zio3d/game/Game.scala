@@ -196,9 +196,22 @@ object Game extends GLApp[RenderContext, GameState] {
       (n, !input.keys.contains(Key.ESC))
     }
 
-  override def cleanup(c: RenderContext) =
-    shaders.simple.cleanup(c.simpleShaderProgram) *>
+  override def cleanup(c: RenderContext, s: GameState) =
+    cleanupState(s) *>
+      shaders.simple.cleanup(c.simpleShaderProgram) *>
       shaders.scene.cleanup(c.sceneShaderProgram) *>
       shaders.skybox.cleanup(c.skyboxShaderProgram) *>
       shaders.particle.cleanup(c.particleShaderProgram)
+
+  private def cleanupState(s: GameState) =
+    ZIO.foreach(s.simpleItems)(cleanupItem) *>
+      ZIO.foreach(s.sceneItems)(cleanupItem) *>
+      ZIO.foreach(s.skyboxItems)(cleanupItem) *>
+      ZIO.foreach(s.particles)(cleanupItem)
+
+  private def cleanupItem(i: GameItem) =
+    ZIO.foreach(i.model.meshes) { m =>
+      gl.deleteVertexArrays(m.vao) *>
+        ZIO.foreach(m.vbos)(gl.deleteBuffers)
+    }
 }

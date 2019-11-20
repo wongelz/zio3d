@@ -2,6 +2,7 @@ package zio3d.core
 
 import org.lwjgl.opengl.GLCapabilities
 import zio.ZIO
+import zio3d.core.gl.GL.{VertexArrayObject, VertexBufferObject}
 
 package object gl {
 
@@ -19,4 +20,10 @@ package object gl {
 
   final def clear(mask: Int): ZIO[GL, Nothing, Unit] =
     ZIO.accessM(_.gl.clear(mask))
+
+  final def deleteBuffers(buffer: VertexBufferObject): ZIO[GL, Nothing, Unit] =
+    ZIO.accessM(_.gl.deleteBuffers(buffer))
+
+  final def deleteVertexArrays(array: VertexArrayObject): ZIO[GL, Nothing, Unit] =
+    ZIO.accessM(_.gl.deleteVertexArrays(array))
 }

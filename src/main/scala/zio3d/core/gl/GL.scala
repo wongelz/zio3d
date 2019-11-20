@@ -83,6 +83,8 @@ object GL {
 
     def bindBuffer(target: Int, buffer: VertexBufferObject): UIO[Unit]
 
+    def deleteBuffers(buffer: VertexBufferObject): UIO[Unit]
+
     def bufferData(target: Int, data: IntBuffer, usage: Int): UIO[Unit]
 
     def bufferData(target: Int, data: FloatBuffer, usage: Int): UIO[Unit]
@@ -109,6 +111,8 @@ object GL {
     def genVertexArrays(): UIO[VertexArrayObject]
 
     def bindVertexArray(array: VertexArrayObject): UIO[Unit]
+
+    def deleteVertexArrays(array: VertexArrayObject): UIO[Unit]
 
     def bindFragDataLocation(program: Program, colorNumber: Int, name: String): UIO[Unit]
 
@@ -227,6 +231,9 @@ object GL {
       def bindBuffer(target: Int, buffer: VertexBufferObject): UIO[Unit] =
         IO.effectTotal { GL15.glBindBuffer(target, buffer.ref) }
 
+      def deleteBuffers(buffer: VertexBufferObject): UIO[Unit] =
+        IO.effectTotal { GL15.glDeleteBuffers(buffer.ref) }
+
       def bufferData(target: Int, data: IntBuffer, usage: Int): UIO[Unit] =
         IO.effectTotal { GL15.glBufferData(target, data, usage) }
 
@@ -263,6 +270,9 @@ object GL {
 
       def bindVertexArray(array: VertexArrayObject): UIO[Unit] =
         IO.effectTotal { GL30.glBindVertexArray(array.ref) }
+
+      def deleteVertexArrays(array: VertexArrayObject): UIO[Unit] =
+        IO.effectTotal { GL30.glDeleteVertexArrays(array.ref) }
 
       def bindFragDataLocation(program: Program, colorNumber: Int, name: String): UIO[Unit] =
         IO.effectTotal { GL30.glBindFragDataLocation(program.ref, colorNumber, name) }

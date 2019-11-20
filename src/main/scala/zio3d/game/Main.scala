@@ -33,7 +33,7 @@ object Main extends GLRuntime {
             s   <- game.initialState(c).lock(mainThread)
             now <- currentTime(TimeUnit.MILLISECONDS)
             _   <- gameLoop(window, game, c, s, None, now)
-            _   <- game.cleanup(c).lock(mainThread)
+            _   <- game.cleanup(c, s).lock(mainThread)
           } yield ()
       )
 
