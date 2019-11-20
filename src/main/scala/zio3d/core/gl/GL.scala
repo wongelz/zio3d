@@ -148,6 +148,8 @@ object GL {
 
     def activeTexture(texture: Int): UIO[Unit]
 
+    def deleteTextures(texture: Texture): UIO[Unit]
+
     def texParameter(target: Int, pname: Int, param: Int): UIO[Unit]
 
     def pixelStorei(pname: Int, param: Int): UIO[Unit]
@@ -358,6 +360,9 @@ object GL {
 
       def activeTexture(texture: Int): UIO[Unit] =
         IO.effectTotal { GL13.glActiveTexture(texture) }
+
+      def deleteTextures(texture: Texture): UIO[Unit] =
+        IO.effectTotal { GL11.glDeleteTextures(texture.value) }
 
       def texParameter(target: Int, pname: Int, param: Int): UIO[Unit] =
         IO.effectTotal { GL11.glTexParameteri(target, pname, param) }

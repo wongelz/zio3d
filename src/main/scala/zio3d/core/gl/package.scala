@@ -2,7 +2,7 @@ package zio3d.core
 
 import org.lwjgl.opengl.GLCapabilities
 import zio.ZIO
-import zio3d.core.gl.GL.{VertexArrayObject, VertexBufferObject}
+import zio3d.core.gl.GL.{Texture, VertexArrayObject, VertexBufferObject}
 
 package object gl {
 
@@ -26,4 +26,7 @@ package object gl {
 
   final def deleteVertexArrays(array: VertexArrayObject): ZIO[GL, Nothing, Unit] =
     ZIO.accessM(_.gl.deleteVertexArrays(array))
+
+  final def deleteTextures(texture: Texture): ZIO[GL, Nothing, Unit] =
+    ZIO.accessM(_.gl.deleteTextures(texture))
 }

@@ -211,7 +211,8 @@ object Game extends GLApp[RenderContext, GameState] {
 
   private def cleanupItem(i: GameItem) =
     ZIO.foreach(i.model.meshes) { m =>
-      gl.deleteVertexArrays(m.vao) *>
-        ZIO.foreach(m.vbos)(gl.deleteBuffers)
+      ZIO.foreach(m.material.texture)(gl.deleteTextures) *>
+        ZIO.foreach(m.vbos)(gl.deleteBuffers) *>
+        gl.deleteVertexArrays(m.vao)
     }
 }
