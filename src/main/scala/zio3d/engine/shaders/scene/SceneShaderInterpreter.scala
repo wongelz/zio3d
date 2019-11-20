@@ -467,28 +467,18 @@ object SceneShaderInterpreter {
           } *>
           gl.uniform1i(program.uniTextureSampler, 0) *>
           setUniform(program.uniFog, fixtures.fog) *>
-          ZIO.foreach(item.instances)(i => renderItem(program, item.model, i, transformation)) *>
+          ZIO.foreach(item.model.meshes)(
+            m => renderMesh(program, m, item.instances, transformation, item.model.animation)
+          ) *>
           gl.useProgram(Program.None)
 
-      private def animationFrame(model: Model, item: ItemInstance) =
-        for {
-          i <- item.modelAnimation
-          a <- model.animation
-        } yield a.frames(i.currentFrame)
-
-      private def renderItem(
+      private def renderMesh(
         program: SceneShaderProgram,
-        model: Model,
-        item: ItemInstance,
-        transformation: Transformation
+        mesh: Mesh,
+        items: List[ItemInstance],
+        trans: Transformation,
+        anim: Option[Animation]
       ) =
-        gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.getModelViewMatrix(item)) *>
-          animationFrame(model, item).fold(IO.unit) { f =>
-            gl.uniformMatrix4fvs(program.uniJointsMatrix, false, f.jointMatrices)
-          } *>
-          ZIO.foreach(model.meshes)(m => renderMesh(program, m))
-
-      private def renderMesh(program: SceneShaderProgram, mesh: Mesh) =
         mesh.material.texture.fold(IO.unit)(bindTexture) *>
           mesh.material.normalMap.fold(IO.unit)(bindNormalMap) *>
           setUniform(program.uniMaterial, mesh.material) *>
@@ -498,7 +488,7 @@ object SceneShaderInterpreter {
           gl.enableVertexAttribArray(program.normalsAttr) *>
           gl.enableVertexAttribArray(program.jointWeightsAttr) *>
           gl.enableVertexAttribArray(program.jointIndicesAttr) *>
-          gl.drawElements(GL_TRIANGLES, mesh.vertexCount, GL_UNSIGNED_INT, 0) *>
+          ZIO.foreach(items)(i => renderInstance(program, mesh, i, trans, anim)) *>
           gl.disableVertexAttribArray(program.positionAttr) *>
           gl.disableVertexAttribArray(program.texCoordAttr) *>
           gl.disableVertexAttribArray(program.normalsAttr) *>
@@ -506,6 +496,25 @@ object SceneShaderInterpreter {
           gl.disableVertexAttribArray(program.jointIndicesAttr) *>
           gl.bindTexture(GL_TEXTURE_2D, Texture.None) *>
           gl.bindVertexArray(VertexArrayObject.None)
+
+      private def renderInstance(
+        program: SceneShaderProgram,
+        mesh: Mesh,
+        item: ItemInstance,
+        transformation: Transformation,
+        anim: Option[Animation]
+      ) =
+        gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.getModelViewMatrix(item)) *>
+          animationFrame(item, anim).fold(IO.unit) { f =>
+            gl.uniformMatrix4fvs(program.uniJointsMatrix, false, f.jointMatrices)
+          } *>
+          gl.drawElements(GL_TRIANGLES, mesh.vertexCount, GL_UNSIGNED_INT, 0)
+
+      private def animationFrame(item: ItemInstance, animation: Option[Animation]) =
+        for {
+          i <- item.modelAnimation
+          a <- animation
+        } yield a.frames(i.currentFrame)
 
       private def bindTexture(texture: Texture) =
         gl.activeTexture(GL_TEXTURE0) *>

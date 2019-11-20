@@ -141,30 +141,35 @@ object SimpleShaderInterpreter {
         gl.useProgram(program.program) *>
           gl.uniformMatrix4fv(program.uniProjectionMatrix, false, transformation.projectionMatrix) *>
           gl.uniform1i(program.uniTextureSampler, 0) *>
-          ZIO.foreach(item.instances)(i => renderItem(program, item.model, i, transformation)) *>
+          ZIO.foreach(item.model.meshes)(m => renderMesh(program, m, item.instances, transformation)) *>
           gl.useProgram(Program.None)
 
-      private def renderItem(
+      private def renderMesh(
         program: SimpleShaderProgram,
-        model: Model,
-        item: ItemInstance,
-        transformation: Transformation
+        mesh: Mesh,
+        items: List[ItemInstance],
+        trans: Transformation
       ) =
-        gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.getModelViewMatrix(item)) *>
-          ZIO.foreach(model.meshes)(m => renderMesh(program, m))
-
-      private def renderMesh(program: SimpleShaderProgram, mesh: Mesh) =
         mesh.material.texture.fold(IO.unit)(bindTexture) *>
           gl.bindVertexArray(mesh.vao) *>
           gl.enableVertexAttribArray(program.positionAttr) *>
           gl.enableVertexAttribArray(program.texCoordAttr) *>
           gl.enableVertexAttribArray(program.normalsAttr) *>
-          gl.drawElements(GL_TRIANGLES, mesh.vertexCount, GL_UNSIGNED_INT, 0) *>
+          ZIO.foreach(items)(i => renderInstance(program, mesh, i, trans)) *>
           gl.disableVertexAttribArray(program.positionAttr) *>
           gl.disableVertexAttribArray(program.texCoordAttr) *>
           gl.disableVertexAttribArray(program.normalsAttr) *>
           gl.bindTexture(GL_TEXTURE_2D, Texture.None) *>
           gl.bindVertexArray(VertexArrayObject.None)
+
+      private def renderInstance(
+        program: SimpleShaderProgram,
+        mesh: Mesh,
+        item: ItemInstance,
+        transformation: Transformation
+      ) =
+        gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.getModelViewMatrix(item)) *>
+          gl.drawElements(GL_TRIANGLES, mesh.vertexCount, GL_UNSIGNED_INT, 0)
 
       private def bindTexture(texture: Texture) =
         gl.activeTexture(GL_TEXTURE0) *>

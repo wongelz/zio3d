@@ -162,14 +162,32 @@ object ParticleShaderInterpreter {
           gl.uniform1i(program.uniTextureSampler, 0) *>
           gl.depthMask(false) *>
           gl.blendFunc(GL_SRC_ALPHA, GL_ONE) *>
-          ZIO.foreach(item.instances)(i => renderItem(program, item.model, i, transformation)) *>
+          ZIO.foreach(item.model.meshes)(m => renderMesh(program, m, item.instances, transformation)) *>
           gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) *>
           gl.depthMask(true) *>
           gl.useProgram(Program.None)
 
-      private def renderItem(
+      private def renderMesh(
         program: ParticleShaderProgram,
-        model: Model,
+        mesh: Mesh,
+        items: List[ItemInstance],
+        trans: Transformation
+      ) =
+        mesh.material.texture.fold(IO.unit)(bindTexture) *>
+          gl.bindVertexArray(mesh.vao) *>
+          gl.enableVertexAttribArray(program.positionAttr) *>
+          gl.enableVertexAttribArray(program.texCoordAttr) *>
+          gl.enableVertexAttribArray(program.normalsAttr) *>
+          ZIO.foreach(items)(i => renderInstance(program, mesh, i, trans)) *>
+          gl.disableVertexAttribArray(program.positionAttr) *>
+          gl.disableVertexAttribArray(program.texCoordAttr) *>
+          gl.disableVertexAttribArray(program.normalsAttr) *>
+          gl.bindTexture(GL_TEXTURE_2D, Texture.None) *>
+          gl.bindVertexArray(VertexArrayObject.None)
+
+      private def renderInstance(
+        program: ParticleShaderProgram,
+        mesh: Mesh,
         item: ItemInstance,
         transformation: Transformation
       ) = {
@@ -187,26 +205,13 @@ object ParticleShaderInterpreter {
           gl.uniform1f(program.uniTexXOffset, texXOffset) *>
           gl.uniform1f(program.uniTexYOffset, texYOffset) *>
           gl.uniformMatrix4fv(program.uniModelViewMatrix, false, buildModelViewMatrix(transformation, item)) *>
-          ZIO.foreach(model.meshes)(m => renderMesh(program, m))
+          gl.drawElements(GL_TRIANGLES, mesh.vertexCount, GL_UNSIGNED_INT, 0)
       }
 
       private def buildModelViewMatrix(t: Transformation, i: ItemInstance) = {
         val modelMatrix = t.getModelMatrix(i)
         t.viewMatrix * t.viewMatrix.transpose3x3(modelMatrix)
       }
-
-      private def renderMesh(program: ParticleShaderProgram, mesh: Mesh) =
-        mesh.material.texture.fold(IO.unit)(bindTexture) *>
-          gl.bindVertexArray(mesh.vao) *>
-          gl.enableVertexAttribArray(program.positionAttr) *>
-          gl.enableVertexAttribArray(program.texCoordAttr) *>
-          gl.enableVertexAttribArray(program.normalsAttr) *>
-          gl.drawElements(GL_TRIANGLES, mesh.vertexCount, GL_UNSIGNED_INT, 0) *>
-          gl.disableVertexAttribArray(program.positionAttr) *>
-          gl.disableVertexAttribArray(program.texCoordAttr) *>
-          gl.disableVertexAttribArray(program.normalsAttr) *>
-          gl.bindTexture(GL_TEXTURE_2D, Texture.None) *>
-          gl.bindVertexArray(VertexArrayObject.None)
 
       private def bindTexture(texture: Texture) =
         gl.activeTexture(GL_TEXTURE0) *>

@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL12._
 import org.lwjgl.opengl.GL13._
 import org.lwjgl.opengl.GL15._
 import org.lwjgl.opengl.GL20
-import zio.{IO, UIO}
+import zio.{IO, UIO, ZIO}
 import zio3d.core.buffers.Buffers
 import zio3d.core.gl.GL
 import zio3d.core.gl.GL._
@@ -156,31 +156,35 @@ object SkyboxShaderInterpreter {
           gl.uniform1i(program.uniSkybox, 0) *>
           gl.uniformMatrix4fv(program.uniProjectionMatrix, false, transformation.projectionMatrix) *>
           gl.uniform3f(program.uniAmbientLight, 1.0f, 1.0f, 1.0f) *>
-          IO.foreach(item.instances)(i => renderItem(program, item.model, i, transformation)) *>
+          ZIO.foreach(item.model.meshes)(m => renderMesh(program, m, item.instances, transformation)) *>
           gl.bindTexture(GL_TEXTURE_CUBE_MAP, Texture.None) *>
           gl.bindVertexArray(VertexArrayObject.None) *>
           gl.useProgram(Program.None)
 
-      private def renderItem(
+      private def renderMesh(
         program: SkyboxShaderProgram,
-        model: Model,
-        item: ItemInstance,
-        transformation: Transformation
-      ) =
-        gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.noTranslation.getModelViewMatrix(item)) *>
-          IO.foreach(model.meshes)(m => renderMesh(program, m))
-
-      private def renderMesh(program: SkyboxShaderProgram, mesh: Mesh): UIO[Unit] =
+        mesh: Mesh,
+        items: List[ItemInstance],
+        trans: Transformation
+      ): UIO[Unit] =
         gl.depthFunc(GL_LEQUAL) *>
           gl.bindVertexArray(mesh.vao) *>
           mesh.material.texture.fold(IO.unit)(t => bindTexture(t)) *>
           gl.enableVertexAttribArray(program.positionAttr) *>
           gl.enableVertexAttribArray(program.texCoordAttr) *>
-          gl.drawArrays(GL_TRIANGLES, 0, 36) *>
+          ZIO.foreach(items)(i => renderInstance(program, i, trans)) *>
           gl.disableVertexAttribArray(program.positionAttr) *>
           gl.disableVertexAttribArray(program.texCoordAttr) *>
           gl.bindVertexArray(VertexArrayObject.None) *>
           gl.depthFunc(GL_LESS)
+
+      private def renderInstance(
+        program: SkyboxShaderProgram,
+        i: ItemInstance,
+        transformation: Transformation
+      ) =
+        gl.uniformMatrix4fv(program.uniModelViewMatrix, false, transformation.noTranslation.getModelViewMatrix(i)) *>
+          gl.drawArrays(GL_TRIANGLES, 0, 36)
 
       private def bindTexture(texture: Texture) =
         gl.activeTexture(GL_TEXTURE0) *>
