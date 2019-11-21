@@ -51,11 +51,15 @@ object HudRenderer {
     def render(context: HudContext, windowSize: WindowSize, state: HudState): UIO[Unit]
   }
 
-  trait Live extends HudRenderer with NVG.Live with Buffers.Live {
+  trait Live extends HudRenderer {
+
+    // dependencies
+    val buffers: Buffers.Service
+    val nvg: NVG.Service
 
     val FontName = "BOLD"
 
-    override def hudRenderer = new Service {
+    final val hudRenderer = new Service {
       def init(font: Path): IO[LoadingError, HudContext] =
         for {
           n  <- nvg.create(NVG_STENCIL_STROKES)

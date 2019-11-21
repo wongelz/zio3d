@@ -35,8 +35,14 @@ object ParticleShaderInterpreter {
     normalsAttr: AttribLocation
   )
 
-  trait Live extends GL.Live with Buffers.Live with TextureLoader.Live with ParticleShaderInterpreter {
-    val particleShaderInterpreter = new ShaderInterpreter.Service[SimpleMeshDefinition, ParticleShaderProgram] {
+  trait Live extends ParticleShaderInterpreter {
+
+    // dependencies
+    val gl: GL.Service
+    val buffers: Buffers.Service
+    val textureLoader: TextureLoader.Service
+
+    final val particleShaderInterpreter = new ShaderInterpreter.Service[SimpleMeshDefinition, ParticleShaderProgram] {
       private val strVertexShader =
         """#version 330
           |

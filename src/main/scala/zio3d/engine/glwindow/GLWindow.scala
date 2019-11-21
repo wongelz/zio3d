@@ -19,8 +19,12 @@ object GLWindow {
     def getUserInput(w: Window, prevInput: Option[UserInput]): UIO[UserInput]
   }
 
-  trait Live extends GLWindow with GLFW.Live {
-    val window = new GLWindow.Service {
+  trait Live extends GLWindow {
+
+    // dependencies
+    val glfw: GLFW.Service
+
+    final val window = new GLWindow.Service {
 
       def open(title: String, width: Int, height: Int) =
         for {

@@ -29,8 +29,13 @@ object TerrainLoader {
     ): IO[LoadingError, Terrain]
   }
 
-  trait Live extends HeightMapLoader.Live with Images.Live with TerrainLoader {
-    val terrainLoader: Service = new Service {
+  trait Live extends TerrainLoader {
+
+    // dependencies
+    val images: Images.Service
+    val heightMapLoader: HeightMapLoader.Service
+
+    final val terrainLoader: Service = new Service {
       override def load(
         program: SceneShaderProgram,
         terrainSize: Int,
@@ -72,7 +77,4 @@ object TerrainLoader {
       Box2D(topLeftX, topLeftZ, width, height)
     }
   }
-
-  object Live extends Live
-
 }

@@ -33,8 +33,14 @@ object SimpleShaderInterpreter {
     normalsAttr: AttribLocation
   )
 
-  trait Live extends GL.Live with Buffers.Live with TextureLoader.Live with SimpleShaderInterpreter {
-    val simpleShaderInterpreter = new ShaderInterpreter.Service[SimpleMeshDefinition, SimpleShaderProgram] {
+  trait Live extends SimpleShaderInterpreter {
+
+    // dependencies
+    val gl: GL.Service
+    val textureLoader: TextureLoader.Service
+    val buffers: Buffers.Service
+
+    final val simpleShaderInterpreter = new ShaderInterpreter.Service[SimpleMeshDefinition, SimpleShaderProgram] {
       private val strVertexShader =
         """#version 330
           |
@@ -179,6 +185,4 @@ object SimpleShaderInterpreter {
         gl.deleteProgram(program.program)
     }
   }
-
-  object Live extends Live
 }

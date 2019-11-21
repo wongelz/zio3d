@@ -7,7 +7,8 @@ import zio3d.core.images.Image
 import zio3d.core.math.Vector3
 import zio3d.engine.HeightMapMesh._
 import zio3d.engine.loaders.LoadingError
-import zio3d.engine.shaders.scene.{SceneShaderInterpreter, SceneShaderProgram}
+import zio3d.engine.shaders.ShaderInterpreter
+import zio3d.engine.shaders.scene.SceneShaderProgram
 import zio3d.engine.{HeightMapMesh, MaterialDefinition, MeshDefinition}
 
 import scala.collection.mutable.ListBuffer
@@ -28,8 +29,12 @@ object HeightMapLoader {
     ): IO[LoadingError, HeightMapMesh]
   }
 
-  trait Live extends SceneShaderInterpreter.Live with HeightMapLoader {
-    val heightMapLoader = new Service {
+  trait Live extends HeightMapLoader {
+
+    // dependencies
+    val sceneShaderInterpreter: ShaderInterpreter.Service[MeshDefinition, SceneShaderProgram]
+
+    final val heightMapLoader = new Service {
       override def load(
         program: SceneShaderProgram,
         minY: Float,

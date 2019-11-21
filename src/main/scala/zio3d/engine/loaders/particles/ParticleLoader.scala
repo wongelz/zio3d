@@ -9,7 +9,7 @@ import zio3d.engine._
 import zio3d.engine.loaders.LoadingError
 import zio3d.engine.loaders.assimp.StaticMeshLoader
 import zio3d.engine.loaders.texture.TextureLoader
-import zio3d.engine.shaders.particle.ParticleShaderInterpreter
+import zio3d.engine.shaders.ShaderInterpreter
 import zio3d.engine.shaders.particle.ParticleShaderInterpreter.ParticleShaderProgram
 
 trait ParticleLoader {
@@ -44,14 +44,15 @@ object ParticleLoader {
     ): IO[LoadingError, Fires]
   }
 
-  trait Live
-      extends StaticMeshLoader.Live
-      with ParticleShaderInterpreter.Live
-      with TextureLoader.Live
-      with Random.Live
-      with ParticleLoader {
+  trait Live extends ParticleLoader {
 
-    val particleLoader = new Service {
+    // dependencies
+    val random: Random.Service[Any]
+    val textureLoader: TextureLoader.Service
+    val staticMeshLoader: StaticMeshLoader.Service
+    val particleShaderInterpreter: ShaderInterpreter.Service[SimpleMeshDefinition, ParticleShaderProgram]
+
+    final val particleLoader = new Service {
 
       def loadGun(
         program: ParticleShaderProgram,

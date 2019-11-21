@@ -310,8 +310,13 @@ object SceneShaderInterpreter {
 
   val SpecularPower = 10.0f
 
-  trait Live extends GL.Live with TextureLoader.Live with Buffers.Live with SceneShaderInterpreter {
-    val sceneShaderInterpreter = new ShaderInterpreter.Service[MeshDefinition, SceneShaderProgram] {
+  trait Live extends SceneShaderInterpreter {
+
+    val gl: GL.Service
+    val textureLoader: TextureLoader.Service
+    val buffers: Buffers.Service
+
+    final val sceneShaderInterpreter = new ShaderInterpreter.Service[MeshDefinition, SceneShaderProgram] {
 
       def loadShaderProgram =
         for {
@@ -553,7 +558,4 @@ object SceneShaderInterpreter {
         gl.deleteProgram(program.program)
     }
   }
-
-  object Live extends Live
-
 }

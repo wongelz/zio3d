@@ -24,8 +24,12 @@ object StaticMeshLoader {
     def load(resourcePath: Path, flags: Int): IO[LoadingError, List[MeshDefinition]]
   }
 
-  trait Live extends Assimp.Live with StaticMeshLoader {
-    val staticMeshLoader = new Service {
+  trait Live extends StaticMeshLoader {
+
+    // dependencies
+    val assimp: Assimp.Service
+
+    final val staticMeshLoader = new Service {
       override def load(resourcePath: Path): IO[LoadingError, List[MeshDefinition]] =
         load(
           resourcePath,

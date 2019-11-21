@@ -36,7 +36,12 @@ object TextureLoader {
     def loadMaterial(materialDefinition: MaterialDefinition): IO[FileLoadError, Material]
   }
 
-  trait Live extends GL.Live with Images.Live with TextureLoader {
+  trait Live extends TextureLoader {
+
+    // dependencies
+    val gl: GL.Service
+    val images: Images.Service
+
     val textureLoader = new Service {
 
       /**
@@ -83,7 +88,4 @@ object TextureLoader {
         }
     }
   }
-
-  object Live extends Live
-
 }

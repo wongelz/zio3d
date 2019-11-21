@@ -11,12 +11,16 @@ import zio.{internal, Exit, FiberFailure, IO, Runtime, ZIO}
 import zio3d.core.buffers.Buffers
 import zio3d.core.gl.GL
 import zio3d.core.glfw.GLFW
+import zio3d.core.images.Images
+import zio3d.core.nvg.NVG
 import zio3d.engine.RenderEnv
 import zio3d.engine.glwindow.GLWindow
 import zio3d.engine.loaders.assimp.StaticMeshLoader
 import zio3d.engine.loaders.assimp.anim.AnimMeshLoader
+import zio3d.engine.loaders.heightmap.HeightMapLoader
 import zio3d.engine.loaders.particles.ParticleLoader
 import zio3d.engine.loaders.terrain.TerrainLoader
+import zio3d.engine.loaders.texture.TextureLoader
 import zio3d.engine.shaders.particle.ParticleShaderInterpreter
 import zio3d.engine.shaders.scene.SceneShaderInterpreter
 import zio3d.engine.shaders.simple.SimpleShaderInterpreter
@@ -33,8 +37,9 @@ trait GLRuntime extends Runtime[RenderEnv] {
 
   override val environment: RenderEnv = new Clock.Live with Buffers.Live with GL.Live with GLFW.Live
   with SimpleShaderInterpreter.Live with SkyboxShaderInterpreter.Live with SceneShaderInterpreter.Live
-  with ParticleShaderInterpreter with TerrainLoader.Live with HudRenderer.Live with StaticMeshLoader.Live
-  with AnimMeshLoader.Live with Blocking.Live with Random.Live with ParticleLoader.Live with GLWindow.Live
+  with ParticleShaderInterpreter.Live with TerrainLoader.Live with HudRenderer.Live with StaticMeshLoader.Live
+  with AnimMeshLoader.Live with Blocking.Live with Random.Live with GLWindow.Live with ParticleLoader.Live
+  with Images.Live with HeightMapLoader.Live with NVG.Live with TextureLoader.Live
 
   def run(args: List[String]): ZIO[RenderEnv, Nothing, Int]
 

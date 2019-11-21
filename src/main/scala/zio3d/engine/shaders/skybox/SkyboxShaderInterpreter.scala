@@ -11,6 +11,7 @@ import zio.{IO, UIO, ZIO}
 import zio3d.core.buffers.Buffers
 import zio3d.core.gl.GL
 import zio3d.core.gl.GL._
+import zio3d.core.images.Images
 import zio3d.engine.loaders.LoadingError.{ProgramLinkError, ShaderCompileError}
 import zio3d.engine.loaders.texture._
 import zio3d.engine.shaders.ShaderInterpreter
@@ -34,9 +35,15 @@ object SkyboxShaderInterpreter {
     texCoordAttr: AttribLocation
   )
 
-  trait Live extends GL.Live with Buffers.Live with TextureLoader.Live with SkyboxShaderInterpreter {
+  trait Live extends SkyboxShaderInterpreter {
 
-    val skyboxShaderInterpreter = new ShaderInterpreter.Service[SkyboxDefinition, SkyboxShaderProgram] {
+    // dependencies
+    val gl: GL.Service
+    val textureLoader: TextureLoader.Service
+    val buffers: Buffers.Service
+    val images: Images.Service
+
+    final val skyboxShaderInterpreter = new ShaderInterpreter.Service[SkyboxDefinition, SkyboxShaderProgram] {
 
       private val strVertexShader =
         """#version 330
@@ -194,7 +201,4 @@ object SkyboxShaderInterpreter {
         gl.deleteProgram(program.program)
     }
   }
-
-  object Live extends Live
-
 }
