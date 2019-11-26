@@ -41,15 +41,4 @@ final case class Quaternion(x: Float, y: Float, z: Float, w: Float) {
 object Quaternion {
 
   val Zero = Quaternion(0, 0, 0, 1)
-
-  def apply(axisAngle: AxisAngle4): Quaternion = {
-    val s = sin(axisAngle.angle * 0.5f)
-    val c = cos(axisAngle.angle * 0.5f)
-    Quaternion(
-      axisAngle.x * s,
-      axisAngle.y * s,
-      axisAngle.z * s,
-      c
-    )
-  }
 }

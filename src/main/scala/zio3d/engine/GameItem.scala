@@ -54,7 +54,7 @@ final case class ItemInstance(
     copy(rotation = rotation)
 
   def withRotation(rotation: AxisAngle4) =
-    copy(rotation = Quaternion(rotation))
+    copy(rotation = rotation.quaternion)
 
   def withScale(scale: Float) =
     copy(scale = scale)

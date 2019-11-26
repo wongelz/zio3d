@@ -145,7 +145,7 @@ object Game extends GLApp[RenderContext, GameState] {
               ItemInstance(
                 Vector3(i.position.x, 0, i.position.y),
                 o.scale,
-                o.rotation * Quaternion(AxisAngle4(i.orientation, 0, 1, 0))
+                o.rotation * AxisAngle4.y(i.orientation).quaternion
               )
             )
         }
@@ -171,7 +171,7 @@ object Game extends GLApp[RenderContext, GameState] {
             ItemInstance(
               pos,
               obj.scale,
-              obj.rotation * Quaternion(AxisAngle4(i.orientation, 0, 1, 0)),
+              obj.rotation * AxisAngle4.y(i.orientation).quaternion,
               obj.boxSize,
               numFrames.map(f => ModelAnimation(f, currentFrame = abs(rand) % f)),
               None

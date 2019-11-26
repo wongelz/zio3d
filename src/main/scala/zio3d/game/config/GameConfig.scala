@@ -137,7 +137,7 @@ object GameLevel {
       GameObject(
         models.tree,
         scale = 0.02f,
-        rotation = Quaternion(AxisAngle4(toRadians(-90), 1, 0, 0)),
+        rotation = AxisAngle4.x(toRadians(-90)).quaternion,
         boxSize = 1f,
         instances = List(
           Instance(Vector2(10f, 10f)),
@@ -170,7 +170,7 @@ object GameLevel {
       ),
       GameObject(
         models.cybertruck,
-        rotation = Quaternion(AxisAngle4(toRadians(-90), 1, 0, 0)),
+        rotation = AxisAngle4.x(toRadians(-90)).quaternion,
         scale = 1.0f,
         boxSize = 2.0f,
         instances = List(
