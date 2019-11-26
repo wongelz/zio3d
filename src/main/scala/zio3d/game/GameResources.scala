@@ -14,6 +14,8 @@ object GameResources {
     final val particle = unsafePath("/models/particle/particle.obj")
 
     final val tree = unsafePath("/models/tree/palm_tree.FBX")
+
+    final val cybertruck = unsafePath("/models/cybertruck/tesla_ct_export1123.fbx")
   }
 
   object textures {

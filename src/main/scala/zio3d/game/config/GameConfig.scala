@@ -167,6 +167,15 @@ object GameLevel {
             Instance(Vector2(2f, -8f), toRadians(-90f))
           ) ++
             createArmyPositions(Vector2(0, -25f), 25, 8, 1.5f).map(p => Instance(p, toRadians(-90))).toList
+      ),
+      GameObject(
+        models.cybertruck,
+        rotation = Quaternion(AxisAngle4(toRadians(-90), 1, 0, 0)),
+        scale = 1.0f,
+        boxSize = 2.0f,
+        instances = List(
+          Instance(Vector2(12f, -2f))
+        )
       )
     ),
     startPosition = Vector2.origin,

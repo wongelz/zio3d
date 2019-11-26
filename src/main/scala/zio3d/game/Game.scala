@@ -141,7 +141,13 @@ object Game extends GLApp[RenderContext, GameState] {
           m <- shaders.scene.loadMesh(c.sceneShaderProgram, i.head)
         } yield o.instances.map { i =>
           GameItem(Model.still(m))
-            .spawn(ItemInstance(Vector3(i.position.x, 0, i.position.y), o.scale, o.rotation))
+            .spawn(
+              ItemInstance(
+                Vector3(i.position.x, 0, i.position.y),
+                o.scale,
+                o.rotation * Quaternion(AxisAngle4(i.orientation, 0, 1, 0))
+              )
+            )
         }
       }
       .map(_.flatten)
@@ -153,12 +159,11 @@ object Game extends GLApp[RenderContext, GameState] {
           a <- loadAnimMesh(o.model)
           m <- ZIO.foreach(a.meshes)(m => shaders.scene.loadMesh(c.sceneShaderProgram, m))
           i <- spawnInstances(o, m, a.animations, terrain)
-        } yield GameItem(Model.animated(m, a.animations.head), i)
+        } yield a.animations.headOption.fold(GameItem(Model.still(m), i))(a => GameItem(Model.animated(m, a), i))
       }
 
   private def spawnInstances(obj: GameObject, meshes: List[Mesh], animations: List[Animation], terrain: Terrain) = {
-    val anim      = animations.head
-    val numFrames = anim.frames.length
+    val numFrames = animations.headOption.map(_.frames.length)
     ZIO
       .foreach(obj.instances) { i =>
         nextInt.map { rand =>
@@ -166,9 +171,9 @@ object Game extends GLApp[RenderContext, GameState] {
             ItemInstance(
               pos,
               obj.scale,
-              Quaternion(AxisAngle4(i.orientation, 0, 1, 0)),
+              obj.rotation * Quaternion(AxisAngle4(i.orientation, 0, 1, 0)),
               obj.boxSize,
-              Some(ModelAnimation(numFrames, currentFrame = abs(rand) % numFrames)),
+              numFrames.map(f => ModelAnimation(f, currentFrame = abs(rand) % f)),
               None
             )
           }

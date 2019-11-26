@@ -14,3 +14,4 @@ In build.sbt, ensure `lazy val os =` is set to your operating system.
 - https://github.com/JOML-CI/JOML
 - http://www.custommapmakers.org/skyboxes.php
 - https://opengameart.org
+- [Tesla Cybertruck by hashikemu](https://sketchfab.com/3d-models/tesla-cybertruck-657e71b3e2ad468196668e9c9df708fb) licenced under [CC Attribution](https://creativecommons.org/licenses/by/4.0/)
