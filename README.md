@@ -4,8 +4,6 @@ An experimental 3D game built with [ZIO](https://zio.dev/) and OpenGL ([LWJGL](h
 
 ## Quick start
 
-In build.sbt, ensure `lazy val os =` is set to your operating system.
-
 `sbt run`
 
 ## Sources & acknowledgements

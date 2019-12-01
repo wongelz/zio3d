@@ -9,8 +9,12 @@ scalaVersion := "2.13.0"
 lazy val zioVersion    = "1.0.0-RC17"
 lazy val lwjglVersion  = "3.2.1"
 
-// os=windows/linux/macos
-lazy val os            = "macos"
+lazy val os = Option(System.getProperty("os.name", ""))
+  .map(_.substring(0, 3).toLowerCase) match {
+  case Some("win") => "windows"
+  case Some("mac") => "macos"
+  case _           => "linux"
+}
 
 libraryDependencies ++= Seq(
   "dev.zio"               %% "zio"                         % zioVersion,
