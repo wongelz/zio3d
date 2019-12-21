@@ -6,8 +6,8 @@ version := "0.1"
 
 scalaVersion := "2.13.0"
 
-lazy val zioVersion    = "1.0.0-RC17"
-lazy val lwjglVersion  = "3.2.1"
+lazy val zioVersion   = "1.0.0-RC17"
+lazy val lwjglVersion = "3.2.1"
 
 lazy val os = Option(System.getProperty("os.name", ""))
   .map(_.substring(0, 3).toLowerCase) match {
@@ -17,20 +17,20 @@ lazy val os = Option(System.getProperty("os.name", ""))
 }
 
 libraryDependencies ++= Seq(
-  "dev.zio"               %% "zio"                         % zioVersion,
-  "dev.zio"               %% "zio-streams"                 % zioVersion,
-  "org.lwjgl"              % "lwjgl"                       % lwjglVersion,
-  "org.lwjgl"              % "lwjgl-opengl"                % lwjglVersion,
-  "org.lwjgl"              % "lwjgl-glfw"                  % lwjglVersion,
-  "org.lwjgl"              % "lwjgl-stb"                   % lwjglVersion,
-  "org.lwjgl"              % "lwjgl-assimp"                % lwjglVersion,
-  "org.lwjgl"              % "lwjgl-nanovg"                % lwjglVersion,
-  "org.lwjgl"              % "lwjgl"                       % lwjglVersion classifier s"natives-$os",
-  "org.lwjgl"              % "lwjgl-opengl"                % lwjglVersion classifier s"natives-$os",
-  "org.lwjgl"              % "lwjgl-glfw"                  % lwjglVersion classifier s"natives-$os",
-  "org.lwjgl"              % "lwjgl-stb"                   % lwjglVersion classifier s"natives-$os",
-  "org.lwjgl"              % "lwjgl-assimp"                % lwjglVersion classifier s"natives-$os",
-  "org.lwjgl"              % "lwjgl-nanovg"                % lwjglVersion classifier s"natives-$os"
+  "dev.zio"   %% "zio"         % zioVersion,
+  "dev.zio"   %% "zio-streams" % zioVersion,
+  "org.lwjgl" % "lwjgl"        % lwjglVersion,
+  "org.lwjgl" % "lwjgl-opengl" % lwjglVersion,
+  "org.lwjgl" % "lwjgl-glfw"   % lwjglVersion,
+  "org.lwjgl" % "lwjgl-stb"    % lwjglVersion,
+  "org.lwjgl" % "lwjgl-assimp" % lwjglVersion,
+  "org.lwjgl" % "lwjgl-nanovg" % lwjglVersion,
+  "org.lwjgl" % "lwjgl"        % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-opengl" % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-glfw"   % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-stb"    % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-assimp" % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-nanovg" % lwjglVersion classifier s"natives-$os"
 )
 
 scalacOptions ++= Seq(
@@ -50,6 +50,11 @@ scalacOptions ++= Seq(
   "-target:jvm-1.8"
 )
 
-javaOptions ++= Seq("-XstartOnFirstThread")
+javaOptions ++= {
+  if (os == "macos")
+    Seq("-XstartOnFirstThread")
+  else
+    Nil
+}
 
 fork in run := true
