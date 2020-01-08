@@ -111,7 +111,7 @@ object GLRuntime {
      */
     private[runtime] def run(): Unit =
       while (!terminated) {
-        val work = workQueue.poll()
+        val work = workQueue.poll(1, TimeUnit.MILLISECONDS)
         if (work != null) {
           work.run()
         }
