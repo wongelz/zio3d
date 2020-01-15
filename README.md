@@ -1,5 +1,7 @@
 # ZIO 3D
 
+[![Build Status](https://travis-ci.com/wongelz/zio3d.svg?branch=master)](https://travis-ci.com/wongelz/zio3d)
+
 An experimental 3D game built with [ZIO](https://zio.dev/) and OpenGL ([LWJGL](https://www.lwjgl.org/)).
 
 ## Quick start
