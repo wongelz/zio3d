@@ -6,7 +6,7 @@ version := "0.1"
 
 scalaVersion := "2.13.0"
 
-lazy val zioVersion   = "1.0.0-RC17"
+lazy val zioVersion   = "1.0.0-RC17+420-d4cf5d3a-SNAPSHOT"
 lazy val lwjglVersion = "3.2.1"
 
 lazy val os = Option(System.getProperty("os.name", ""))
@@ -15,6 +15,8 @@ lazy val os = Option(System.getProperty("os.name", ""))
   case Some("mac") => "macos"
   case _           => "linux"
 }
+
+resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies ++= Seq(
   "dev.zio"   %% "zio"         % zioVersion,

@@ -4,7 +4,7 @@ import zio.ZIO
 import zio.random.Random
 import zio3d.core.math.Vector3
 import zio3d.engine._
-import zio3d.game.hud.HudRenderer.HudState
+import zio3d.game.hud.HudState
 
 import scala.annotation.tailrec
 

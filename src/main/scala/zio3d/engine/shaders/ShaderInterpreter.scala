@@ -1,10 +1,8 @@
 package zio3d.engine.shaders
 
 import zio.{IO, UIO}
-import zio3d.core.buffers.Buffers
-import zio3d.core.gl.GL
-import zio3d.engine.loaders.LoadingError
 import zio3d.engine._
+import zio3d.engine.loaders.LoadingError
 
 /**
  * ShaderInterpreter contains the logic for a single shader program, typically consisting
@@ -12,7 +10,7 @@ import zio3d.engine._
  * @tparam M mesh type.
  * @tparam P shader program.
  */
-trait ShaderInterpreter[M, P] extends GL with Buffers {
+trait ShaderInterpreter[M, P] {
   def shaderService: ShaderInterpreter.Service[M, P]
 }
 

@@ -2,26 +2,36 @@ package zio3d.game
 
 import java.util.concurrent.TimeUnit
 
-import zio.ZIO
 import zio.blocking.blocking
 import zio.clock.currentTime
+import zio.{Runtime, ZIO, ZLayer}
 import zio3d.core.glfw.{Window, WindowSize}
-import zio3d.core.{gl, glfw}
+import zio3d.core.{CoreEnv, gl}
 import zio3d.engine._
+import zio3d.engine.loaders.LoadingError
 import zio3d.engine.runtime.GLRuntime
 import zio3d.engine.runtime.GLRuntime.mainThread
+import zio3d.game.hud.HudRenderer
 
-object Main extends GLRuntime {
+object Main extends GLRuntime[GameEnv] {
 
+  val gameEnv: ZLayer.NoDeps[Nothing, GameEnv] =
+    RenderEnv.live ++
+      (CoreEnv.live >>> HudRenderer.live)
+
+  override val environment: GameEnv = Runtime.unsafeFromLayer(gameEnv, platform).environment
+
+  def run(args: List[String]) =
+    Runner.runGame(Game).provide(environment).either
+      .map(_.fold(err => { println(s"Error: $err"); 1 }, _ => 0))
+}
+
+object Runner {
   val title        = "Zio3D"
   val windowWidth  = 400
   val windowHeight = 400
 
-  def run(args: List[String]) =
-    runGame(Game).either
-      .map(_.fold(err => { println(s"Error: $err"); 1 }, _ => 0))
-
-  def runGame[R, S](game: GLApp[R, S]) =
+  def runGame[R, S](game: GLApp[R, S]): ZIO[GameEnv, LoadingError, Unit] =
     glwindow
       .open(title, windowWidth, windowHeight)
       .lock(mainThread)
@@ -37,6 +47,8 @@ object Main extends GLRuntime {
           } yield ()
       )
 
+  import zio3d.core.glfw
+
   private def gameLoop[R, S](
     window: Window,
     game: GLApp[R, S],
@@ -44,7 +56,7 @@ object Main extends GLRuntime {
     st: S,
     i: Option[UserInput],
     t: Long
-  ): ZIO[RenderEnv, Nothing, Unit] =
+  ): ZIO[GameEnv, Nothing, Unit] =
     for {
       _ <- glfw.pollEvents.lock(mainThread)
       s <- glfw.getWindowSize(window).lock(mainThread)

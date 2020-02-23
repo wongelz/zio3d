@@ -11,16 +11,16 @@ import zio3d.core.glfw.WindowSize
 import zio3d.core.math._
 import zio3d.engine._
 import zio3d.engine.loaders.assimp.anim.loadAnimMesh
-import zio3d.engine.loaders.assimp.loadStaticMesh
+import zio3d.engine.loaders.assimp.static.loadStaticMesh
 import zio3d.engine.loaders.particles.{loadFire, loadGun}
 import zio3d.engine.loaders.terrain.loadTerrain
-import zio3d.engine.shaders.particle.ParticleShaderInterpreter.ParticleShaderProgram
+import zio3d.engine.shaders.particle.ParticleShaderProgram
 import zio3d.engine.shaders.scene.SceneShaderProgram
-import zio3d.engine.shaders.simple.SimpleShaderInterpreter.SimpleShaderProgram
-import zio3d.engine.shaders.skybox.SkyboxShaderInterpreter.SkyboxShaderProgram
+import zio3d.engine.shaders.simple.SimpleShaderProgram
+import zio3d.engine.shaders.skybox.SkyboxShaderProgram
 import zio3d.game.GameResources.{fonts, models, textures}
 import zio3d.game.config._
-import zio3d.game.hud.HudRenderer.{HudContext, HudState}
+import zio3d.game.hud.{HudContext, HudState}
 
 final case class RenderContext(
   simpleShaderProgram: SimpleShaderProgram,

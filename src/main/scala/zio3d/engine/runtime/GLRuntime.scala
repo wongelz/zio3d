@@ -3,45 +3,18 @@ package zio3d.engine.runtime
 import java.util
 import java.util.concurrent.{AbstractExecutorService, LinkedBlockingQueue, TimeUnit}
 
-import zio.blocking.Blocking
-import zio.clock.Clock
-import zio.internal.{Executor, Platform, PlatformLive}
-import zio.random.Random
-import zio.{internal, Exit, FiberFailure, IO, Runtime, ZIO}
-import zio3d.core.buffers.Buffers
-import zio3d.core.gl.GL
-import zio3d.core.glfw.GLFW
-import zio3d.core.images.Images
-import zio3d.core.nvg.NVG
-import zio3d.engine.RenderEnv
-import zio3d.engine.glwindow.GLWindow
-import zio3d.engine.loaders.assimp.StaticMeshLoader
-import zio3d.engine.loaders.assimp.anim.AnimMeshLoader
-import zio3d.engine.loaders.heightmap.HeightMapLoader
-import zio3d.engine.loaders.particles.ParticleLoader
-import zio3d.engine.loaders.terrain.TerrainLoader
-import zio3d.engine.loaders.texture.TextureLoader
-import zio3d.engine.shaders.particle.ParticleShaderInterpreter
-import zio3d.engine.shaders.scene.SceneShaderInterpreter
-import zio3d.engine.shaders.simple.SimpleShaderInterpreter
-import zio3d.engine.shaders.skybox.SkyboxShaderInterpreter
-import zio3d.game.hud.HudRenderer
+import zio.internal.{Executor, Platform}
+import zio.{Exit, FiberFailure, IO, Runtime, ZIO, internal}
 
 import scala.concurrent.ExecutionContext
 
 /**
  * The entry-point for a LWJGL application running on ZIO.
  */
-trait GLRuntime extends Runtime[RenderEnv] {
-  override val platform: Platform = PlatformLive.Default
+trait GLRuntime[R] extends Runtime[R] {
+  override val platform: Platform = Platform.default
 
-  override val environment: RenderEnv = new Clock.Live with Buffers.Live with GL.Live with GLFW.Live
-  with SimpleShaderInterpreter.Live with SkyboxShaderInterpreter.Live with SceneShaderInterpreter.Live
-  with ParticleShaderInterpreter.Live with TerrainLoader.Live with HudRenderer.Live with StaticMeshLoader.Live
-  with AnimMeshLoader.Live with Blocking.Live with Random.Live with GLWindow.Live with ParticleLoader.Live
-  with Images.Live with HeightMapLoader.Live with NVG.Live with TextureLoader.Live
-
-  def run(args: List[String]): ZIO[RenderEnv, Nothing, Int]
+  def run(args: List[String]): ZIO[R, Nothing, Int]
 
   /**
    * The Scala main function, intended to be called only by the Scala runtime.
@@ -65,7 +38,7 @@ trait GLRuntime extends Runtime[RenderEnv] {
    * Executes the effect while the main thread works through any work directed to it.
    * In particular, some GLFW methods need to be executed from the main thread.
    */
-  final def unsafeRunContinueMain[E, A](zio: ZIO[RenderEnv, E, A]): Exit[E, A] = {
+  final def unsafeRunContinueMain[E, A](zio: ZIO[R, E, A]): Exit[E, A] = {
     val result = internal.OneShot.make[Exit[E, A]]
 
     unsafeRunAsync(zio) { x: Exit[E, A] =>

@@ -1,6 +1,6 @@
 package zio3d.engine
 
-import zio3d.core.gl.GL.{Texture, VertexArrayObject, VertexBufferObject}
+import zio3d.core.gl.{Texture, VertexArrayObject, VertexBufferObject}
 import zio3d.core.math.Vector4
 
 final case class Material(

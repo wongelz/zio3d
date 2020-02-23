@@ -2,8 +2,8 @@ package zio3d.game
 
 import zio.ZIO
 import zio3d.core.glfw.WindowSize
+import zio3d.engine.UserInput
 import zio3d.engine.loaders.LoadingError
-import zio3d.engine.{RenderEnv, UserInput}
 
 /**
  * Template for a 3D rendered application or game.
@@ -20,7 +20,7 @@ trait GLApp[R, S] {
    * in the app.
    * @return renderer.
    */
-  def initRenderer: ZIO[RenderEnv, LoadingError, R]
+  def initRenderer: ZIO[GameEnv, LoadingError, R]
 
   /**
    * Create the initial app state.
@@ -28,7 +28,7 @@ trait GLApp[R, S] {
    * @param renderer may be used for loading.
    * @return initial state.
    */
-  def initialState(renderer: R): ZIO[RenderEnv, LoadingError, S]
+  def initialState(renderer: R): ZIO[GameEnv, LoadingError, S]
 
   /**
    * Render the current game state into a single frame.
@@ -40,7 +40,7 @@ trait GLApp[R, S] {
     windowSize: WindowSize,
     renderer: R,
     state: S
-  ): ZIO[RenderEnv, Nothing, Unit]
+  ): ZIO[GameEnv, Nothing, Unit]
 
   /**
    * Advance the game state.
@@ -53,7 +53,7 @@ trait GLApp[R, S] {
     state: S,
     userInput: UserInput,
     currentTime: Long
-  ): ZIO[RenderEnv, Nothing, (S, Continue)]
+  ): ZIO[GameEnv, Nothing, (S, Continue)]
 
-  def cleanup(renderer: R, state: S): ZIO[RenderEnv, Nothing, Unit]
+  def cleanup(renderer: R, state: S): ZIO[GameEnv, Nothing, Unit]
 }
