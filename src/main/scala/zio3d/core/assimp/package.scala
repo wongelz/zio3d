@@ -5,7 +5,6 @@ import java.nio.file.Path
 
 import org.lwjgl.assimp.Assimp.{aiGetErrorString, aiGetMaterialColor, aiGetMaterialTexture, aiImportFile}
 import org.lwjgl.assimp.{AIColor4D, AIMaterial, AIScene, AIString}
-import zio.ZLayer.NoDeps
 import zio._
 import zio3d.core.math.Vector4
 import zio3d.engine.MaterialDefinition
@@ -24,7 +23,7 @@ package object assimp {
       def getMaterialColor(mat: AIMaterial, pKey: String, `type`: Int): UIO[Vector4]
     }
 
-    val live: NoDeps[Nothing, Assimp] = ZLayer.succeed {
+    val live = ZLayer.succeed[Assimp.Service] {
       new Service {
         def getErrorString: UIO[Option[String]] =
           UIO.effectTotal { Option(aiGetErrorString()) }
