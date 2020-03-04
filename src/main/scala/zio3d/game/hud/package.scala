@@ -16,8 +16,6 @@ import zio3d.engine.loaders.LoadingError
 
 package object hud {
 
-  val FontName = "BOLD"
-
   type HudRenderer = Has[HudRenderer.Service]
 
   object HudRenderer extends Serializable {
@@ -27,11 +25,13 @@ package object hud {
       def render(context: HudContext, windowSize: WindowSize, state: HudState): UIO[Unit]
     }
 
-    val live = ZLayer.fromEnvironment[CoreEnv, HudRenderer] { env =>
-      Has(new Service {
+    val live = ZLayer.fromFunction[CoreEnv, HudRenderer.Service] { env =>
+      new Service {
 
         private val nvg     = env.get[NVG.Service]
         private val buffers = env.get[Buffers.Service]
+
+        val FontName = "BOLD"
 
         def init(font: Path): IO[LoadingError, HudContext] =
           for {
@@ -83,7 +83,7 @@ package object hud {
               read(fc, buf)
             }
           }
-      })
+      }
     }
   }
   final val hudRenderer: ZIO[HudRenderer, Nothing, HudRenderer.Service] =

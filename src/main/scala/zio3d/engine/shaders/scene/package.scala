@@ -20,8 +20,8 @@ package object scene {
 
     trait Service extends ShaderInterpreter.Service[MeshDefinition, SceneShaderProgram]
 
-    val live = ZLayer.fromEnvironment[PreShaderEnv, SceneShaderInterpreter] { env =>
-      Has(new Service {
+    val live = ZLayer.fromFunction[PreShaderEnv, SceneShaderInterpreter.Service] { env =>
+      new Service {
 
         private val gl = env.get[GL.Service]
         private val buffers = env.get[Buffers.Service]
@@ -505,7 +505,7 @@ package object scene {
 
         def cleanup(program: SceneShaderProgram) =
           gl.deleteProgram(program.program)
-      })
+      }
     }
   }
 

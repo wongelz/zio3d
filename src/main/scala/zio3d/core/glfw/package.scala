@@ -70,8 +70,8 @@ package object glfw {
       def getWindowSize(window: Window): UIO[WindowSize]
     }
 
-    val live = ZLayer.fromService[Buffers.Service, GLFW] { buffers =>
-      Has(new Service {
+    val live = ZLayer.fromService[Buffers.Service, GLFW.Service] { buffers =>
+      new Service {
 
         def setErrorPrintStream(printStream: PrintStream): UIO[Unit] =
           IO.effectTotal {
@@ -220,7 +220,7 @@ package object glfw {
               glfwGetWindowSize(window.value, w, h)
             }
           } yield WindowSize(w.get(), h.get())
-      })
+      }
     }
   }
 

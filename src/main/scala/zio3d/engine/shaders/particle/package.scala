@@ -20,8 +20,8 @@ package object particle {
 
     trait Service extends ShaderInterpreter.Service[SimpleMeshDefinition, ParticleShaderProgram]
 
-    val live = ZLayer.fromEnvironment[PreShaderEnv, ParticleShaderInterpreter] { env =>
-      Has(new Service {
+    val live = ZLayer.fromFunction[PreShaderEnv, ParticleShaderInterpreter.Service] { env =>
+      new Service {
 
         private val gl = env.get[GL.Service]
         private val buffers = env.get[Buffers.Service]
@@ -209,7 +209,7 @@ package object particle {
 
         override def cleanup(program: ParticleShaderProgram): UIO[Unit] =
           gl.deleteProgram(program.program)
-      })
+      }
     }
   }
 

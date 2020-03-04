@@ -22,8 +22,8 @@ package object skybox {
 
     trait Service extends ShaderInterpreter.Service[SkyboxDefinition, SkyboxShaderProgram]
 
-    val live = ZLayer.fromEnvironment[PreShaderEnv, SkyboxShaderInterpreter] { env =>
-      Has(new Service {
+    val live = ZLayer.fromFunction[PreShaderEnv, SkyboxShaderInterpreter.Service] { env =>
+      new Service {
 
         private val gl = env.get[GL.Service]
         private val buffers = env.get[Buffers.Service]
@@ -183,7 +183,7 @@ package object skybox {
 
         override def cleanup(program: SkyboxShaderProgram) =
           gl.deleteProgram(program.program)
-      })
+      }
     }
   }
 

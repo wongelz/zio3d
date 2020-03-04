@@ -20,8 +20,8 @@ package object simple {
 
     trait Service extends ShaderInterpreter.Service[SimpleMeshDefinition, SimpleShaderProgram]
 
-    val live = ZLayer.fromEnvironment[PreShaderEnv, SimpleShaderInterpreter] { env =>
-      Has(new Service {
+    val live = ZLayer.fromFunction[PreShaderEnv, SimpleShaderInterpreter.Service] { env =>
+      new Service {
 
         private val gl = env.get[GL.Service]
         private val buffers = env.get[Buffers.Service]
@@ -169,7 +169,7 @@ package object simple {
 
         def cleanup(program: SimpleShaderProgram) =
           gl.deleteProgram(program.program)
-      })
+      }
     }
   }
 

@@ -18,8 +18,8 @@ package object glwindow {
       def getUserInput(w: Window, prevInput: Option[UserInput]): UIO[UserInput]
     }
 
-    val live = ZLayer.fromService[GLFW.Service, GLWindow] { glfw =>
-      Has(new Service {
+    val live = ZLayer.fromService[GLFW.Service, GLWindow.Service] { glfw =>
+      new Service {
 
         def open(title: String, width: Int, height: Int) =
           for {
@@ -78,7 +78,7 @@ package object glwindow {
               }
             }
             .map(_.toSet.flatten)
-      })
+      }
     }
   }
 

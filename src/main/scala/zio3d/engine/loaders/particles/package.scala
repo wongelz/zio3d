@@ -39,8 +39,8 @@ package object particles {
       ): IO[LoadingError, Fires]
     }
 
-    val live = ZLayer.fromEnvironment[ShaderEnv, ParticleLoader] { env =>
-      Has(new Service {
+    val live = ZLayer.fromFunction[ShaderEnv, ParticleLoader.Service] { env =>
+      new Service {
 
         private val particleShaderInterpreter = env.get[ParticleShaderInterpreter.Service]
 
@@ -99,7 +99,7 @@ package object particles {
             ),
             List.empty
           )
-      })
+      }
     }
   }
 

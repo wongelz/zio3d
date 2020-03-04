@@ -23,8 +23,8 @@ package object static {
       def load(resourcePath: Path, flags: Int): IO[LoadingError, List[MeshDefinition]]
     }
 
-    val live = ZLayer.fromService[Assimp.Service, StaticMeshLoader] { assimp =>
-      Has(new Service {
+    val live = ZLayer.fromService[Assimp.Service, StaticMeshLoader.Service] { assimp =>
+      new Service {
 
         override def load(resourcePath: Path): IO[LoadingError, List[MeshDefinition]] =
           load(
@@ -88,7 +88,7 @@ package object static {
             .map(_.mIndices())
             .flatMap(buf => Stream.unfold(buf)(b => if (b.hasRemaining) Some((b.get(), b)) else None))
             .run(Sink.collectAll[Int])
-      })
+      }
     }
   }
 

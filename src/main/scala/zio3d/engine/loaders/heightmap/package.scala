@@ -27,8 +27,8 @@ package object heightmap {
       ): IO[LoadingError, HeightMapMesh]
     }
 
-    val live = ZLayer.fromEnvironment[ShaderEnv, HeightMapLoader] { env =>
-      Has(new Service {
+    val live = ZLayer.fromFunction[ShaderEnv, HeightMapLoader.Service] { env =>
+      new Service {
 
         private val sceneShaderInterpreter = env.get[SceneShaderInterpreter.Service]
 
@@ -127,7 +127,7 @@ package object heightmap {
 
           minY + Math.abs(maxY - minY) * (argb.toFloat / HeightMapMesh.MaxColour)
         }
-      })
+      }
     }
   }
 

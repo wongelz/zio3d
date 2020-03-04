@@ -24,8 +24,8 @@ package object anim {
       def load(resourcePath: Path, flags: Int): IO[LoadingError, AnimMesh]
     }
 
-    val live = ZLayer.fromService[Assimp.Service, AnimMeshLoader] { assimp =>
-      Has(new Service {
+    val live = ZLayer.fromService[Assimp.Service, AnimMeshLoader.Service] { assimp =>
+      new Service {
 
         override def load(resourcePath: Path): IO[LoadingError, AnimMesh] =
           load(
@@ -248,7 +248,7 @@ package object anim {
             m.c4(),
             m.d4()
           )
-      })
+      }
     }
   }
 

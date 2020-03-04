@@ -27,8 +27,8 @@ package object terrain {
       ): IO[LoadingError, Terrain]
     }
 
-    val live = ZLayer.fromServices[Images.Service, HeightMapLoader.Service, TerrainLoader] { (images, heightMapLoader) =>
-      Has(new Service {
+    val live = ZLayer.fromServices[Images.Service, HeightMapLoader.Service, TerrainLoader.Service] { (images, heightMapLoader) =>
+      new Service {
 
         override def load(
           program: SceneShaderProgram,
@@ -69,7 +69,7 @@ package object terrain {
           val height   = Math.abs(HeightMapMesh.StartZ * 2) * scale
           Box2D(topLeftX, topLeftZ, width, height)
         }
-      })
+      }
     }
   }
 

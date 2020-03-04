@@ -35,8 +35,8 @@ package object texture {
       def loadMaterial(materialDefinition: MaterialDefinition): IO[FileLoadError, Material]
     }
 
-    val live = ZLayer.fromEnvironment[CoreEnv, TextureLoader] { env =>
-      Has(new Service {
+    val live = ZLayer.fromFunction[CoreEnv, TextureLoader.Service] { env =>
+      new Service {
 
         private val gl = env.get[GL.Service]
         private val images = env.get[Images.Service]
@@ -83,7 +83,7 @@ package object texture {
                 Material.textured(t)
               }
           }
-      })
+      }
     }
   }
 
