@@ -24,7 +24,7 @@ package object engine {
   type SysEnv = Clock with Blocking with Random
 
   object SysEnv {
-    val live: ZLayer.NoDeps[Nothing, SysEnv] =
+    val live: ZLayer[Any, Nothing, SysEnv] =
       Clock.live ++
         Blocking.live ++
         Random.live
@@ -33,10 +33,10 @@ package object engine {
   type PreShaderEnv = SysEnv with CoreEnv with TextureLoader
 
   object PreShaderEnv {
-    private val textureLoader: ZLayer.NoDeps[Nothing, TextureLoader] =
+    private val textureLoader: ZLayer[Any, Nothing, TextureLoader] =
       CoreEnv.live >>> TextureLoader.live
 
-    val live: ZLayer.NoDeps[Nothing, PreShaderEnv] =
+    val live: ZLayer[Any, Nothing, PreShaderEnv] =
       SysEnv.live ++
         CoreEnv.live ++
         textureLoader
@@ -49,7 +49,7 @@ package object engine {
     with ParticleShaderInterpreter
 
   object ShaderEnv {
-    val live: ZLayer.NoDeps[Nothing, ShaderEnv] =
+    val live: ZLayer[Any, Nothing, ShaderEnv] =
       PreShaderEnv.live ++
         (PreShaderEnv.live >>> ((SimpleShaderInterpreter.live) ++
           SkyboxShaderInterpreter.live ++
@@ -65,12 +65,12 @@ package object engine {
     with GLWindow
 
   object RenderEnv {
-    private val heightMapLoader: ZLayer.NoDeps[Nothing, HeightMapLoader] =
+    private val heightMapLoader: ZLayer[Any, Nothing, HeightMapLoader] =
       ShaderEnv.live >>> HeightMapLoader.live
-    private val terrainLoader: ZLayer.NoDeps[Nothing, TerrainLoader] =
+    private val terrainLoader: ZLayer[Any, Nothing, TerrainLoader] =
       (heightMapLoader ++ Images.live) >>> TerrainLoader.live
 
-    val live: ZLayer.NoDeps[Nothing, RenderEnv] =
+    val live: ZLayer[Any, Nothing, RenderEnv] =
       ShaderEnv.live ++
         terrainLoader ++
         (Assimp.live >>> StaticMeshLoader.live) ++

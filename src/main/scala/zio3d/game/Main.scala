@@ -15,7 +15,7 @@ import zio3d.game.hud.HudRenderer
 
 object Main extends GLRuntime[GameEnv] {
 
-  val gameEnv: ZLayer.NoDeps[Nothing, GameEnv] =
+  val gameEnv: ZLayer[Any, Nothing, GameEnv] =
     RenderEnv.live ++
       (CoreEnv.live >>> HudRenderer.live)
 

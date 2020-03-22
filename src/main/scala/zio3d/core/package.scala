@@ -12,7 +12,7 @@ package object core {
   type CoreEnv = Buffers with GL with GLFW with NVG with Images with Assimp
 
   object CoreEnv {
-    val live: ZLayer.NoDeps[Nothing, CoreEnv] =
+    val live: ZLayer[Any, Nothing, CoreEnv] =
       Buffers.live ++
         GL.live ++
         (Buffers.live >>> GLFW.live) ++
