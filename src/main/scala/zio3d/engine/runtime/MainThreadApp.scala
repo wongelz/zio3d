@@ -3,18 +3,18 @@ package zio3d.engine.runtime
 import java.util
 import java.util.concurrent.{AbstractExecutorService, LinkedBlockingQueue, TimeUnit}
 
-import zio.internal.{Executor, Platform}
+import zio.internal.Executor
 import zio.{Exit, FiberFailure, IO, Runtime, ZIO, internal}
 
 import scala.concurrent.ExecutionContext
 
 /**
- * The entry-point for a LWJGL application running on ZIO.
+ * The entry-point for a ZIO application that must run certain effects on the main thread.
  */
-trait GLRuntime[R] extends Runtime[R] {
-  override val platform: Platform = Platform.default
+trait MainThreadApp {
+  private lazy val runtime = Runtime.default
 
-  def run(args: List[String]): ZIO[R, Nothing, Int]
+  def run(args: List[String]): ZIO[Any, Nothing, Int]
 
   /**
    * The Scala main function, intended to be called only by the Scala runtime.
@@ -26,7 +26,7 @@ trait GLRuntime[R] extends Runtime[R] {
           fiber <- run(args0.toList).fork
           _ <- IO.effectTotal(java.lang.Runtime.getRuntime.addShutdownHook(new Thread {
                 override def run(): Unit = {
-                  val _ = unsafeRunSync(fiber.interrupt)
+                  val _ = runtime.unsafeRun(fiber.interrupt)
                 }
               }))
           result <- fiber.join
@@ -38,20 +38,20 @@ trait GLRuntime[R] extends Runtime[R] {
    * Executes the effect while the main thread works through any work directed to it.
    * In particular, some GLFW methods need to be executed from the main thread.
    */
-  final def unsafeRunContinueMain[E, A](zio: ZIO[R, E, A]): Exit[E, A] = {
+  final def unsafeRunContinueMain[E, A](zio: ZIO[Any, E, A]): Exit[E, A] = {
     val result = internal.OneShot.make[Exit[E, A]]
 
-    unsafeRunAsync(zio) { x: Exit[E, A] =>
-      GLRuntime.MainExecutorService.shutdown()
+    runtime.unsafeRunAsync(zio) { x: Exit[E, A] =>
+      MainThreadApp.MainExecutorService.shutdown()
       result.set(x)
     }
 
-    GLRuntime.MainExecutorService.run()
+    MainThreadApp.MainExecutorService.run()
     result.get()
   }
 }
 
-object GLRuntime {
+object MainThreadApp {
 
   private[runtime] object MainExecutorService extends AbstractExecutorService {
 
@@ -91,6 +91,9 @@ object GLRuntime {
       }
   }
 
+  /**
+   * The main thread is exposed here as an Executor to be used via [[ZIO.lock()]].
+   */
   val mainThread: Executor =
     Executor.fromExecutionContext(10)(ExecutionContext.fromExecutorService(MainExecutorService))
 }

@@ -4,25 +4,23 @@ import java.util.concurrent.TimeUnit
 
 import zio.blocking.blocking
 import zio.clock.currentTime
-import zio.{Runtime, ZIO, ZLayer}
+import zio.{ZIO, ZLayer}
 import zio3d.core.glfw.{Window, WindowSize}
 import zio3d.core.{CoreEnv, gl}
 import zio3d.engine._
 import zio3d.engine.loaders.LoadingError
-import zio3d.engine.runtime.GLRuntime
-import zio3d.engine.runtime.GLRuntime.mainThread
+import zio3d.engine.runtime.MainThreadApp
+import zio3d.engine.runtime.MainThreadApp.mainThread
 import zio3d.game.hud.HudRenderer
 
-object Main extends GLRuntime[GameEnv] {
+object Main extends MainThreadApp {
 
   val gameEnv: ZLayer[Any, Nothing, GameEnv] =
     RenderEnv.live ++
       (CoreEnv.live >>> HudRenderer.live)
 
-  override val environment: GameEnv = Runtime.unsafeFromLayer(gameEnv, platform).environment
-
   def run(args: List[String]) =
-    Runner.runGame(Game).provide(environment).either
+    Runner.runGame(Zio3dGame).provideLayer(gameEnv).either
       .map(_.fold(err => { println(s"Error: $err"); 1 }, _ => 0))
 }
 
@@ -31,7 +29,7 @@ object Runner {
   val windowWidth  = 400
   val windowHeight = 400
 
-  def runGame[R, S](game: GLApp[R, S]): ZIO[GameEnv, LoadingError, Unit] =
+  def runGame[R, S](game: Game[R, S]): ZIO[GameEnv, LoadingError, Unit] =
     glwindow
       .open(title, windowWidth, windowHeight)
       .lock(mainThread)
@@ -51,7 +49,7 @@ object Runner {
 
   private def gameLoop[R, S](
     window: Window,
-    game: GLApp[R, S],
+    game: Game[R, S],
     r: R,
     st: S,
     i: Option[UserInput],
@@ -71,7 +69,7 @@ object Runner {
 
   private def render[R, S](
     window: Window,
-    app: GLApp[R, S],
+    game: Game[R, S],
     windowSize: WindowSize,
     renderer: R,
     state: S
@@ -79,7 +77,7 @@ object Runner {
     for {
       _ <- glfw.makeContextCurrent(window)
       _ <- gl.createCapabilities
-      n <- app.render(windowSize, renderer, state)
+      n <- game.render(windowSize, renderer, state)
     } yield n
 
 }
