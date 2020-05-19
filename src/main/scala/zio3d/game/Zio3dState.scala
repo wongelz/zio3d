@@ -8,7 +8,7 @@ import zio3d.game.hud.HudState
 
 import scala.annotation.tailrec
 
-trait Scene {
+trait Zio3dScene {
 
   def skyboxItems: List[GameItem]
 
@@ -21,7 +21,7 @@ trait Scene {
   def fixtures: Fixtures
 }
 
-final case class GameState(
+final case class Zio3dState(
   time: Long,
   terrain: Terrain,
   skybox: GameItem,
@@ -35,7 +35,7 @@ final case class GameState(
   flashLight: SpotLight,
   fog: Fog,
   hud: HudState
-) extends Scene {
+) extends Zio3dScene {
 
   // per millisecond
   final val moveSpeed        = 0.005f
@@ -52,7 +52,7 @@ final case class GameState(
 
   override def fixtures = Fixtures(LightSources(ambientLight, None, Nil, List(flashLight)), fog)
 
-  def nextState(userInput: UserInput, currentTime: Long): ZIO[Random, Nothing, GameState] = {
+  def nextState(userInput: UserInput, currentTime: Long): ZIO[Random, Nothing, Zio3dState] = {
     val elapsedMillis                                   = currentTime - time
     val (survivingMonsters, destroyedBullets, newFires) = handleBulletCollisions(currentTime, monsters, fires)
 

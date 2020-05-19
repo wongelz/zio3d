@@ -2,10 +2,9 @@ package zio3d.game.config
 
 import java.nio.file.Path
 
-import zio3d.core.math.{toRadians, AxisAngle4, Quaternion, Vector2, Vector3}
-import zio3d.engine.{Fog, SkyboxDefinition}
+import zio3d.core.math._
+import zio3d.engine.{Fog, Perspective, SkyboxDefinition}
 import zio3d.game.GameResources.{models, textures}
-import zio3d.game.Perspective
 
 final case class GunConfig(
   maxBullets: Int,

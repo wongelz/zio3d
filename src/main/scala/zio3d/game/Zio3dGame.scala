@@ -22,7 +22,7 @@ import zio3d.game.GameResources.{fonts, models, textures}
 import zio3d.game.config._
 import zio3d.game.hud.{HudContext, HudState}
 
-final case class RenderContext(
+final case class Zio3dRenderer(
   simpleShaderProgram: SimpleShaderProgram,
   skyboxShaderProgram: SkyboxShaderProgram,
   sceneShaderProgram: SceneShaderProgram,
@@ -31,22 +31,7 @@ final case class RenderContext(
   perspective: Perspective
 )
 
-final case class Perspective(
-  fov: Float,
-  zNear: Float,
-  zFar: Float
-) {
-
-  def getTransformation(windowSize: WindowSize, camera: Camera): Transformation = {
-    val aspectRatio = windowSize.width.toFloat / windowSize.height.toFloat
-    Transformation(
-      Matrix4.forPerspective(fov, aspectRatio, zNear, zFar),
-      camera.viewMatrix
-    )
-  }
-}
-
-object Zio3dGame extends Game[RenderContext, GameState] {
+object Zio3dGame extends Game[Zio3dRenderer, Zio3dState] {
 
   final val config = GameConfig.live
   final val level  = config.level
@@ -60,12 +45,12 @@ object Zio3dGame extends Game[RenderContext, GameState] {
       sc <- shaders.scene.loadShaderProgram
       p  <- shaders.particle.loadShaderProgram
       h  <- hud.init(fonts.bold)
-    } yield RenderContext(m, s, sc, p, h, config.perspective)
+    } yield Zio3dRenderer(m, s, sc, p, h, config.perspective)
 
-  override def initialState(c: RenderContext) =
+  override def initialState(r: Zio3dRenderer) =
     for {
       terrain <- loadTerrain(
-                  c.sceneShaderProgram,
+                  r.sceneShaderProgram,
                   level.terrain.size,
                   level.terrain.scale,
                   level.terrain.minY,
@@ -74,13 +59,13 @@ object Zio3dGame extends Game[RenderContext, GameState] {
                   level.terrain.textureFile,
                   level.terrain.textInc
                 )
-      skybox       <- loadSkybox(c, level.sky)
-      staticObjs   <- loadStaticObjects(c, level.staticObjects)
-      monsters     <- loadMonsters(c, level.monsters, terrain)
+      skybox       <- loadSkybox(r, level.sky)
+      staticObjs   <- loadStaticObjects(r, level.staticObjects)
+      monsters     <- loadMonsters(r, level.monsters, terrain)
       initPosition = terrain.getPosition(level.startPosition).getOrElse(Vector3.origin)
 
       fire <- loadFire(
-               c.particleShaderProgram,
+               r.particleShaderProgram,
                models.particle,
                SimpleMeshDefinition.animatedImage2D(textures.fire.image, false, textures.fire.cols, textures.fire.rows),
                config.fire.maxParticles,
@@ -94,7 +79,7 @@ object Zio3dGame extends Game[RenderContext, GameState] {
                config.fire.animRange
              )
       gun <- loadGun(
-              c.particleShaderProgram,
+              r.particleShaderProgram,
               models.particle,
               SimpleMeshDefinition.image2D(textures.bullet, false),
               config.gun.maxBullets,
@@ -104,7 +89,7 @@ object Zio3dGame extends Game[RenderContext, GameState] {
             )
 
       now <- currentTime(TimeUnit.MILLISECONDS)
-    } yield GameState(
+    } yield Zio3dState(
       now,
       terrain,
       skybox,
@@ -127,18 +112,18 @@ object Zio3dGame extends Game[RenderContext, GameState] {
       cos(toRadians(60.0f))
     )
 
-  private def loadSkybox(c: RenderContext, sky: SkyboxDefinition) =
+  private def loadSkybox(r: Zio3dRenderer, sky: SkyboxDefinition) =
     shaders.skybox
-      .loadMesh(c.skyboxShaderProgram, sky)
+      .loadMesh(r.skyboxShaderProgram, sky)
       .map(Model.still)
       .map(GameItem(_).spawn(ItemInstance(Vector3.origin, sky.scale)))
 
-  private def loadStaticObjects(c: RenderContext, staticObjects: List[GameObject]) =
+  private def loadStaticObjects(r: Zio3dRenderer, staticObjects: List[GameObject]) =
     ZIO
       .foreach(staticObjects) { o =>
         for {
           i <- loadStaticMesh(o.model)
-          m <- shaders.scene.loadMesh(c.sceneShaderProgram, i.head)
+          m <- shaders.scene.loadMesh(r.sceneShaderProgram, i.head)
         } yield o.instances.map { i =>
           GameItem(Model.still(m))
             .spawn(
@@ -152,12 +137,12 @@ object Zio3dGame extends Game[RenderContext, GameState] {
       }
       .map(_.flatten)
 
-  private def loadMonsters(c: RenderContext, monsters: List[GameObject], terrain: Terrain) =
+  private def loadMonsters(r: Zio3dRenderer, monsters: List[GameObject], terrain: Terrain) =
     ZIO
       .foreach(monsters) { o =>
         for {
           a <- loadAnimMesh(o.model)
-          m <- ZIO.foreach(a.meshes)(m => shaders.scene.loadMesh(c.sceneShaderProgram, m))
+          m <- ZIO.foreach(a.meshes)(m => shaders.scene.loadMesh(r.sceneShaderProgram, m))
           i <- spawnInstances(o, m, a.animations, terrain)
         } yield a.animations.headOption.fold(GameItem(Model.still(m), i))(a => GameItem(Model.animated(m, a), i))
       }
@@ -182,33 +167,33 @@ object Zio3dGame extends Game[RenderContext, GameState] {
       .map(_.flatten)
   }
 
-  override def render(windowSize: WindowSize, c: RenderContext, s: GameState) = {
-    val t = c.perspective.getTransformation(windowSize, s.camera)
+  override def render(windowSize: WindowSize, r: Zio3dRenderer, s: Zio3dState) = {
+    val t = r.perspective.getTransformation(windowSize, s.camera)
 
     gl.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT) *>
       gl.clearColor(0.0f, 0.0f, 0.0f, 0.0f) *>
-      ZIO.foreach(s.simpleItems)(i => shaders.simple.render(c.simpleShaderProgram, i, t, s.fixtures)) *>
-      ZIO.foreach(s.sceneItems)(i => shaders.scene.render(c.sceneShaderProgram, i, t, s.fixtures)) *>
-      ZIO.foreach(s.skyboxItems)(i => shaders.skybox.render(c.skyboxShaderProgram, i, t, s.fixtures)) *>
-      ZIO.foreach(s.particles)(i => shaders.particle.render(c.particleShaderProgram, i, t, s.fixtures)) *>
-      hud.render(c.hudContext, windowSize, s.hud) *>
+      ZIO.foreach(s.simpleItems)(i => shaders.simple.render(r.simpleShaderProgram, i, t, s.fixtures)) *>
+      ZIO.foreach(s.sceneItems)(i => shaders.scene.render(r.sceneShaderProgram, i, t, s.fixtures)) *>
+      ZIO.foreach(s.skyboxItems)(i => shaders.skybox.render(r.skyboxShaderProgram, i, t, s.fixtures)) *>
+      ZIO.foreach(s.particles)(i => shaders.particle.render(r.particleShaderProgram, i, t, s.fixtures)) *>
+      hud.render(r.hudContext, windowSize, s.hud) *>
       gl.enable(GL11.GL_DEPTH_TEST) *>
       gl.enable(GL11.GL_STENCIL_TEST)
   }
 
-  override def nextState(s: GameState, input: UserInput, currentTime: Long) =
+  override def nextState(s: Zio3dState, input: UserInput, currentTime: Long) =
     s.nextState(input, currentTime) map { n =>
       (n, !input.keys.contains(Key.ESC))
     }
 
-  override def cleanup(c: RenderContext, s: GameState) =
+  override def cleanup(r: Zio3dRenderer, s: Zio3dState) =
     cleanupState(s) *>
-      shaders.simple.cleanup(c.simpleShaderProgram) *>
-      shaders.scene.cleanup(c.sceneShaderProgram) *>
-      shaders.skybox.cleanup(c.skyboxShaderProgram) *>
-      shaders.particle.cleanup(c.particleShaderProgram)
+      shaders.simple.cleanup(r.simpleShaderProgram) *>
+      shaders.scene.cleanup(r.sceneShaderProgram) *>
+      shaders.skybox.cleanup(r.skyboxShaderProgram) *>
+      shaders.particle.cleanup(r.particleShaderProgram)
 
-  private def cleanupState(s: GameState) =
+  private def cleanupState(s: Zio3dState) =
     ZIO.foreach(s.simpleItems)(cleanupItem) *>
       ZIO.foreach(s.sceneItems)(cleanupItem) *>
       ZIO.foreach(s.skyboxItems)(cleanupItem) *>
