@@ -1,5 +1,6 @@
 package zio3d.engine.loaders.assimp.anim
 
+import zio.Chunk
 import zio3d.core.math.Matrix4
 import zio3d.engine.{Animation, MeshDefinition}
 
@@ -48,7 +49,7 @@ final case class Node(
     children.foldLeft(numFrames)((f, c) => Math.max(c.getAnimationFrames(), f))
   }
 
-  def addTransformations(ts: List[Matrix4]) = {
+  def addTransformations(ts: Chunk[Matrix4]) = {
     transformations ++= ts
     this
   }

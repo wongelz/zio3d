@@ -48,7 +48,7 @@ package object anim {
             boneCounter <- Ref.make(0)
             meshBones <- Stream
               .range(0, s.mNumMeshes())
-              .mapM(i => processMesh(s, AIMesh.create(aiMeshes.get(i)), materials, boneCounter))
+              .mapM(i => processMesh(s, AIMesh.create(aiMeshes.get(i)), materials.toList, boneCounter))
               .run(Sink.collectAll[MeshBones])
 
             bones = meshBones.flatMap(_.bones)
@@ -56,7 +56,7 @@ package object anim {
             rootTrans  = toMatrix(s.mRootNode().mTransformation())
             animations <- processAnimations(s, bones, rootTrans)
 
-          } yield AnimMesh(meshBones.map(_.mesh), animations)
+          } yield AnimMesh(meshBones.map(_.mesh).toList, animations)
 
         private def processMaterial(material: AIMaterial, parentPath: Path) =
           for {
@@ -84,7 +84,7 @@ package object anim {
             mat = if (im >= 0 && im < materials.length) materials(im) else MaterialDefinition.empty
           } yield MeshBones(
             MeshDefinition(v.toArray, t.toArray, n.toArray, i.toArray, bw._2.toArray, bw._1.toArray, mat),
-            b
+            b.toList
           )
 
         private def toVectorArray(buffer: AIVector3D.Buffer) =
@@ -106,7 +106,7 @@ package object anim {
             .flatMap(buf => Stream.unfold(buf)(b => if (b.hasRemaining) Some((b.get(), b)) else None))
             .run(Sink.collectAll[Int])
 
-        private def getBones(mesh: AIMesh, boneCounter: Ref[Int]): UIO[List[Bone]] =
+        private def getBones(mesh: AIMesh, boneCounter: Ref[Int]): UIO[Chunk[Bone]] =
           Stream
             .range(0, mesh.mNumBones())
             .mapM(
@@ -119,8 +119,8 @@ package object anim {
             )
             .run(Sink.collectAll[Bone])
 
-        private def getBoneIdsAndWeights(bones: List[Bone], numVertices: Int) = {
-          def getWeights(vertexWeightMap: Map[Int, List[VertexWeight]]): Seq[Float] =
+        private def getBoneIdsAndWeights(bones: Chunk[Bone], numVertices: Int) = {
+          def getWeights(vertexWeightMap: Map[Int, Chunk[VertexWeight]]): Seq[Float] =
             for {
               i             <- 0 until numVertices
               j             <- 0 until MeshDefinition.MaxWeights
@@ -128,7 +128,7 @@ package object anim {
               n             = vertexWeights.length
             } yield if (j < n) vertexWeights(j).weight else 0.0f
 
-          def getBoneIds(vertexWeightMap: Map[Int, List[VertexWeight]]): Seq[Int] =
+          def getBoneIds(vertexWeightMap: Map[Int, Chunk[VertexWeight]]): Seq[Int] =
             for {
               i             <- 0 until numVertices
               j             <- 0 until MeshDefinition.MaxWeights
@@ -151,7 +151,7 @@ package object anim {
               .fromIterable[AIVertexWeight](bone.mWeights().iterator().asScala.to(Iterable))
               .map(w => VertexWeight(id, w.mVertexId(), w.mWeight()))
               .run(Sink.collectAll[VertexWeight])
-          } yield Bone(id, bone.mName().dataString(), toMatrix(bone.mOffsetMatrix()), ws)
+          } yield Bone(id, bone.mName().dataString(), toMatrix(bone.mOffsetMatrix()), ws.toList)
 
         private def processNodeHierarchy(aiNode: AINode, parentNode: Option[Node]): UIO[Node] =
           for {
@@ -161,12 +161,12 @@ package object anim {
             )
           } yield n.copy(children = c)
 
-        private def processAnimations(scene: AIScene, bones: List[Bone], rootTrans: Matrix4) = {
+        private def processAnimations(scene: AIScene, bones: Chunk[Bone], rootTrans: Matrix4) = {
           val aiRootNode = scene.mRootNode()
           for {
             rootNode <- processNodeHierarchy(aiRootNode, None)
             animations <- UIO.foreach(0 until scene.mNumAnimations())(
-              i => buildAnimation(AIAnimation.create(scene.mAnimations().get(i)), bones, rootTrans, rootNode)
+              i => buildAnimation(AIAnimation.create(scene.mAnimations().get(i)), bones.toList, rootTrans, rootNode)
             )
           } yield animations
         }

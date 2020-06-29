@@ -48,9 +48,9 @@ package object static {
             aiMeshes = s.mMeshes()
             meshes <- Stream
               .range(0, s.mNumMeshes())
-              .mapM(i => processMesh(AIMesh.create(aiMeshes.get(i)), materials))
+              .mapM(i => processMesh(AIMesh.create(aiMeshes.get(i)), materials.toList))
               .run(Sink.collectAll[MeshDefinition])
-          } yield meshes
+          } yield meshes.toList
 
         private def processMaterial(material: AIMaterial, path: Path): IO[LoadingError, MaterialDefinition] =
           for {
