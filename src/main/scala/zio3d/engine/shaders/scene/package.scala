@@ -327,7 +327,7 @@ package object scene {
           } yield MaterialUniform(a, d, s, t, r)
 
         private def createPointLightUniforms(p: Program, name: String, n: Int) =
-          IO.foreach(0 until n) { i =>
+          IO.foreach(List.range(0, n)) { i =>
             createPointLightUniform(p, s"$name[$i]")
           }
 
@@ -342,7 +342,7 @@ package object scene {
           } yield PointLightUniform(co, ps, in, ac, al, ae)
 
         private def createSpotLightUniforms(p: Program, name: String, n: Int) =
-          IO.foreach(0 until n) { i =>
+          IO.foreach(List.range(0, n)) { i =>
             for {
               pl <- createPointLightUniform(p, s"$name[$i].pl")
               cd <- gl.getUniformLocation(p, s"$name[$i].conedir")

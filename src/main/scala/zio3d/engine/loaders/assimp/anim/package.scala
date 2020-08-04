@@ -156,7 +156,7 @@ package object anim {
         private def processNodeHierarchy(aiNode: AINode, parentNode: Option[Node]): UIO[Node] =
           for {
             n <- UIO.succeed(Node(aiNode.mName().dataString(), parentNode))
-            c <- UIO.foreach(0 until aiNode.mNumChildren())(
+            c <- UIO.foreach(List.range(0, aiNode.mNumChildren()))(
               i => processNodeHierarchy(AINode.create(aiNode.mChildren().get(i)), Some(n))
             )
           } yield n.copy(children = c)
@@ -165,7 +165,7 @@ package object anim {
           val aiRootNode = scene.mRootNode()
           for {
             rootNode <- processNodeHierarchy(aiRootNode, None)
-            animations <- UIO.foreach(0 until scene.mNumAnimations())(
+            animations <- UIO.foreach(List.range(0, scene.mNumAnimations()))(
               i => buildAnimation(AIAnimation.create(scene.mAnimations().get(i)), bones.toList, rootTrans, rootNode)
             )
           } yield animations
