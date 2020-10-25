@@ -6,7 +6,7 @@ version := "0.1"
 
 scalaVersion := "2.13.0"
 
-lazy val zioVersion   = "1.0.1"
+lazy val zioVersion   = "1.0.3"
 lazy val lwjglVersion = "3.2.1"
 
 lazy val os = Option(System.getProperty("os.name", ""))
